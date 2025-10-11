@@ -10,9 +10,12 @@ The Tempest Weather Station Waggle Plugin is now fully functional and ready for 
 - ✅ Parse Tempest message types (obs_st, rapid_wind, hub_status)
 - ✅ Publish comprehensive weather data to Waggle message stream
 - ✅ Implement publish interval throttling to prevent message overflow
-- ✅ Add configurable command-line arguments (--udp-port, --publish-interval, --debug)
+- ✅ Add configurable command-line arguments (--udp-port, --publish-interval, --debug, --no-firewall)
+- ✅ Add environment variable support for all command-line arguments
+- ✅ Add configuration priority system (CLI > ENV > Defaults)
+- ✅ Add startup indicators showing which env vars are active
 - ✅ Create Docker container with proper networking
-- ✅ Add comprehensive README documentation
+- ✅ Add comprehensive README documentation with env var examples
 - ✅ Implement robust error handling and logging
 - ✅ Add firewall configuration guidance
 
@@ -89,4 +92,7 @@ Before deploying to production:
 - Requires host networking for UDP broadcasts
 - Compatible with existing waggle-davis infrastructure
 - All standard Python libraries (except waggle package)
+- All CLI arguments can be set via environment variables (TEMPEST_*)
+- Configuration priority: CLI args > Environment variables > Defaults
+- Boolean env vars accept: true/1/yes/on (case insensitive)
 

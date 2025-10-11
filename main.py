@@ -316,31 +316,47 @@ def tempest_udp_listener(logger, udp_port=UDP_PORT):
 
 # ---------------- Command Line Arguments ----------------
 def parse_args():
-    """Parse command line arguments"""
+    """Parse command line arguments with environment variable support"""
+    # Helper function to check environment variables for boolean flags
+    def env_bool(env_var):
+        """Convert environment variable to boolean"""
+        val = os.getenv(env_var, "").lower()
+        return val in ("true", "1", "yes", "on")
+    
+    # Get defaults from environment variables or use hardcoded defaults
+    default_udp_port = int(os.getenv("TEMPEST_UDP_PORT", UDP_PORT))
+    default_debug = env_bool("TEMPEST_DEBUG")
+    default_publish_interval = int(os.getenv("TEMPEST_PUBLISH_INTERVAL", "60"))
+    default_no_firewall = env_bool("TEMPEST_NO_FIREWALL")
+    
     parser = argparse.ArgumentParser(
-        description="Tempest Weather Station Waggle Plugin - publishes Tempest UDP data to Waggle stream"
+        description="Tempest Weather Station Waggle Plugin - publishes Tempest UDP data to Waggle stream",
+        epilog="All arguments can be set via environment variables: TEMPEST_UDP_PORT, TEMPEST_DEBUG, "
+               "TEMPEST_PUBLISH_INTERVAL, TEMPEST_NO_FIREWALL"
     )
     parser.add_argument(
         "--udp-port", 
         type=int,
-        default=UDP_PORT, 
-        help=f"UDP port to listen for Tempest broadcasts (default: {UDP_PORT})"
+        default=default_udp_port, 
+        help=f"UDP port to listen for Tempest broadcasts (default: {UDP_PORT}, env: TEMPEST_UDP_PORT)"
     )
     parser.add_argument(
         "--debug", 
         action="store_true", 
-        help="Enable debug output"
+        default=default_debug,
+        help="Enable debug output (env: TEMPEST_DEBUG=true)"
     )
     parser.add_argument(
         "--publish-interval", 
         type=int, 
-        default=60, 
-        help="Minimum interval between data publications in seconds (default: 60)"
+        default=default_publish_interval, 
+        help="Minimum interval between data publications in seconds (default: 60, env: TEMPEST_PUBLISH_INTERVAL)"
     )
     parser.add_argument(
         "--no-firewall", 
-        action="store_true", 
-        help="Skip firewall setup warnings (assumes port is already accessible)"
+        action="store_true",
+        default=default_no_firewall, 
+        help="Skip firewall setup warnings (env: TEMPEST_NO_FIREWALL=true)"
     )
     return parser.parse_args()
 
@@ -367,9 +383,24 @@ def main():
     
     logger.info("🌤️  Starting Tempest Weather Station Waggle Plugin")
     logger.info("=" * 60)
+    
+    # Show configuration with source indicators
+    env_indicators = []
+    if os.getenv("TEMPEST_UDP_PORT"):
+        env_indicators.append("UDP_PORT")
+    if os.getenv("TEMPEST_PUBLISH_INTERVAL"):
+        env_indicators.append("PUBLISH_INTERVAL")
+    if os.getenv("TEMPEST_DEBUG"):
+        env_indicators.append("DEBUG")
+    if os.getenv("TEMPEST_NO_FIREWALL"):
+        env_indicators.append("NO_FIREWALL")
+    
     logger.info(f"UDP Port: {args.udp_port}")
     logger.info(f"Publish Interval: {args.publish_interval} seconds")
     logger.info(f"Debug Mode: {args.debug}")
+    logger.info(f"No Firewall Check: {args.no_firewall}")
+    if env_indicators:
+        logger.info(f"📌 Using environment variables: {', '.join(env_indicators)}")
     logger.info("")
     
     # Check port accessibility

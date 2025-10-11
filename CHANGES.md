@@ -1,5 +1,73 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-11 - Environment Variable Support
+
+### Enhancement: Complete Environment Variable Configuration ✅
+
+**What was added**:
+- All command-line arguments now support environment variable configuration
+- Environment variables can be used as defaults, with CLI args taking precedence
+- Added visual indicators showing which env vars are active at startup
+- Enhanced help text to document environment variable names
+
+**Environment Variables** (4 total):
+- `TEMPEST_UDP_PORT` - UDP port (integer, default: 50222)
+- `TEMPEST_PUBLISH_INTERVAL` - Publish interval in seconds (integer, default: 60)
+- `TEMPEST_DEBUG` - Debug mode (boolean: true/1/yes/on)
+- `TEMPEST_NO_FIREWALL` - Skip firewall warnings (boolean: true/1/yes/on)
+
+**Configuration Priority**:
+1. Command-line arguments (highest)
+2. Environment variables
+3. Built-in defaults (lowest)
+
+**Code Changes**:
+
+**main.py Lines 318-361**: Enhanced `parse_args()` function
+- Added `env_bool()` helper for boolean environment variable parsing
+- Read environment variables with `os.getenv()` before setting argument defaults
+- Updated help text to show corresponding environment variable names
+- Added epilog documenting all environment variables
+
+**main.py Lines 387-403**: Startup configuration display
+- Shows all configuration values at startup
+- Added 📌 indicator when environment variables are active
+- Lists which specific env vars are being used
+- Helps users verify configuration source
+
+**README.md Updates**:
+- Added comprehensive configuration tables for env vars and CLI args
+- Documented boolean value parsing (true/1/yes/on)
+- Added configuration priority explanation
+- Enhanced Docker examples showing env var usage
+- Added mixed configuration examples
+
+**Benefits**:
+- Better Docker/Kubernetes integration (env vars preferred in containers)
+- Easier CI/CD pipeline configuration
+- No need to modify command-line args in scripts
+- More flexible deployment options
+- Clear visibility of active configuration
+
+**Example Usage**:
+```bash
+# Via environment variables
+export TEMPEST_DEBUG=true
+export TEMPEST_PUBLISH_INTERVAL=30
+python3 main.py
+
+# Docker with env vars
+docker run --network host \
+  -e TEMPEST_DEBUG=true \
+  -e TEMPEST_PUBLISH_INTERVAL=30 \
+  tempest-weather-plugin
+
+# Override env vars with CLI args
+TEMPEST_DEBUG=false python3 main.py --debug  # debug=true (CLI wins)
+```
+
+---
+
 ## 2025-10-11 - Initial Implementation and Waggle Publishing
 
 ### Major Features Implemented

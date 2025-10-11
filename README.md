@@ -96,34 +96,77 @@ python3 main.py --publish-interval 30
 ### Docker Usage
 
 ```bash
-# Basic deployment
+# Basic deployment (uses defaults)
 docker run --network host tempest-weather-plugin
 
-# With environment variables
+# With environment variables (recommended for Docker)
 docker run --network host \
   -e TEMPEST_UDP_PORT=50222 \
-  -e TEMPEST_PUBLISH_INTERVAL=60 \
+  -e TEMPEST_PUBLISH_INTERVAL=30 \
   -e TEMPEST_DEBUG=true \
+  -e TEMPEST_NO_FIREWALL=false \
   tempest-weather-plugin
 
-# With custom arguments
-docker run --network host tempest-weather-plugin --debug --udp-port 50223
+# With command-line arguments (overrides environment variables)
+docker run --network host tempest-weather-plugin \
+  --debug \
+  --udp-port 50223 \
+  --publish-interval 45
+
+# Mix of environment variables and arguments
+docker run --network host \
+  -e TEMPEST_PUBLISH_INTERVAL=30 \
+  tempest-weather-plugin --debug
 ```
 
 ## Configuration
 
+All configuration options can be set via either **environment variables** or **command-line arguments**. Command-line arguments take precedence over environment variables.
+
 ### Environment Variables
 
-- `TEMPEST_UDP_PORT` - UDP port to listen for broadcasts (default: 50222)
-- `TEMPEST_PUBLISH_INTERVAL` - Minimum publish interval in seconds (default: 60)
-- `TEMPEST_DEBUG` - Enable debug output (default: false)
+| Variable | Description | Type | Default |
+|----------|-------------|------|---------|
+| `TEMPEST_UDP_PORT` | UDP port to listen for broadcasts | integer | `50222` |
+| `TEMPEST_PUBLISH_INTERVAL` | Minimum publish interval in seconds | integer | `60` |
+| `TEMPEST_DEBUG` | Enable debug output | boolean | `false` |
+| `TEMPEST_NO_FIREWALL` | Skip firewall setup warnings | boolean | `false` |
+
+**Boolean values**: Use `true`, `1`, `yes`, or `on` for true; anything else is false.
+
+**Example**:
+```bash
+export TEMPEST_UDP_PORT=50222
+export TEMPEST_PUBLISH_INTERVAL=30
+export TEMPEST_DEBUG=true
+export TEMPEST_NO_FIREWALL=false
+python3 main.py
+```
 
 ### Command Line Arguments
 
-- `--udp-port PORT` - UDP port for Tempest broadcasts (default: 50222)
-- `--debug` - Enable debug output
-- `--publish-interval SECONDS` - Minimum publish interval (default: 60)
-- `--no-firewall` - Skip firewall setup warnings
+| Argument | Description | Type | Default | Env Variable |
+|----------|-------------|------|---------|--------------|
+| `--udp-port PORT` | UDP port for Tempest broadcasts | integer | `50222` | `TEMPEST_UDP_PORT` |
+| `--publish-interval SECONDS` | Minimum publish interval | integer | `60` | `TEMPEST_PUBLISH_INTERVAL` |
+| `--debug` | Enable debug output | flag | `false` | `TEMPEST_DEBUG` |
+| `--no-firewall` | Skip firewall setup warnings | flag | `false` | `TEMPEST_NO_FIREWALL` |
+
+**Example**:
+```bash
+python3 main.py --debug --udp-port 50223 --publish-interval 30
+```
+
+### Configuration Priority
+
+1. **Command-line arguments** (highest priority)
+2. **Environment variables**
+3. **Built-in defaults** (lowest priority)
+
+The plugin will display which environment variables are being used at startup:
+```
+📌 Using environment variables: UDP_PORT, PUBLISH_INTERVAL
+```
 
 ## Network Requirements
 
