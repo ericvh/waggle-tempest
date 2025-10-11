@@ -173,83 +173,224 @@ def publish_tempest_data(parsed_data, msg_type, logger, force=False):
         if msg_type == "obs_st" and "error" not in parsed_data:
             # Publish comprehensive weather observations
             obs = parsed_data
+            timestamp = datetime.now(timezone.utc)
             
             # Wind data
             plugin.publish("tempest.wind.speed.lull", obs["wind"]["lull_kt"], 
-                         meta={"units": "knots", "description": "Tempest wind lull speed", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "knots", 
+                               "description": "Tempest wind lull speed", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             plugin.publish("tempest.wind.speed.avg", obs["wind"]["avg_kt"], 
-                         meta={"units": "knots", "description": "Tempest average wind speed", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "knots", 
+                               "description": "Tempest average wind speed", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             plugin.publish("tempest.wind.speed.gust", obs["wind"]["gust_kt"], 
-                         meta={"units": "knots", "description": "Tempest wind gust speed", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "knots", 
+                               "description": "Tempest wind gust speed", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             plugin.publish("tempest.wind.direction", obs["wind"]["direction_deg"], 
-                         meta={"units": "degrees", "description": "Tempest wind direction", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "degrees", 
+                               "description": "Tempest wind direction", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             
             # Environmental data
             plugin.publish("tempest.pressure", obs["pressure"]["hpa"], 
-                         meta={"units": "hPa", "description": "Tempest barometric pressure", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "hPa", 
+                               "description": "Tempest barometric pressure", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             plugin.publish("tempest.temperature", obs["temperature"]["c"], 
-                         meta={"units": "celsius", "description": "Tempest air temperature", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "celsius", 
+                               "description": "Tempest air temperature", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             plugin.publish("tempest.humidity", obs["humidity_percent"], 
-                         meta={"units": "percent", "description": "Tempest relative humidity", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "percent", 
+                               "description": "Tempest relative humidity", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             
             # Light data
             plugin.publish("tempest.light.illuminance", obs["light"]["illuminance_lux"], 
-                         meta={"units": "lux", "description": "Tempest illuminance", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "lux", 
+                               "description": "Tempest illuminance", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             plugin.publish("tempest.light.uv_index", obs["light"]["uv_index"], 
-                         meta={"units": "index", "description": "Tempest UV index", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "index", 
+                               "description": "Tempest UV index", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             plugin.publish("tempest.light.solar_radiation", obs["light"]["solar_radiation_wm2"], 
-                         meta={"units": "W/m²", "description": "Tempest solar radiation", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "W/m²", 
+                               "description": "Tempest solar radiation", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             
             # Precipitation data
             plugin.publish("tempest.rain.since_report", obs["rain"]["since_report_mm"], 
-                         meta={"units": "mm", "description": "Tempest rain since report", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "mm", 
+                               "description": "Tempest rain since report", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             plugin.publish("tempest.rain.daily", obs["rain"]["local_day_mm"] or 0, 
-                         meta={"units": "mm", "description": "Tempest daily rainfall", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "mm", 
+                               "description": "Tempest daily rainfall", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             
             # Lightning data
             plugin.publish("tempest.lightning.distance", obs["lightning"]["avg_distance_km"], 
-                         meta={"units": "km", "description": "Tempest lightning distance", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "km", 
+                               "description": "Tempest lightning distance", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             plugin.publish("tempest.lightning.count", obs["lightning"]["strike_count"], 
-                         meta={"units": "count", "description": "Tempest lightning strike count", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "count", 
+                               "description": "Tempest lightning strike count", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             
             # Battery and system data
             plugin.publish("tempest.battery", obs["battery_v"], 
-                         meta={"units": "volts", "description": "Tempest battery voltage", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "volts", 
+                               "description": "Tempest battery voltage", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             plugin.publish("tempest.report_interval", obs["report_interval_min"], 
-                         meta={"units": "minutes", "description": "Tempest report interval", "source": "obs_st"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "minutes", 
+                               "description": "Tempest report interval", 
+                               "source": "obs_st",
+                               "missing": -9999.0})
             
             logger.info(f"📡 Published obs_st data: Wind {obs['wind']['avg_kt']:.1f} kt @ {obs['wind']['direction_deg']:.0f}°, Temp {obs['temperature']['c']:.1f}°C, RH {obs['humidity_percent']:.0f}%")
             
         elif msg_type == "rapid_wind" and "error" not in parsed_data:
             # Publish rapid wind data (most recent wind readings)
             wind = parsed_data["wind"]
+            timestamp = datetime.now(timezone.utc)
             
             plugin.publish("tempest.wind.speed.instant", wind["instant_kt"], 
-                         meta={"units": "knots", "description": "Tempest instant wind speed", "source": "rapid_wind"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "knots", 
+                               "description": "Tempest instant wind speed", 
+                               "source": "rapid_wind",
+                               "missing": -9999.0})
             plugin.publish("tempest.wind.direction.instant", wind["direction_deg"], 
-                         meta={"units": "degrees", "description": "Tempest instant wind direction", "source": "rapid_wind"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "degrees", 
+                               "description": "Tempest instant wind direction", 
+                               "source": "rapid_wind",
+                               "missing": -9999.0})
             
             logger.info(f"📡 Published rapid_wind data: {wind['instant_kt']:.1f} kt @ {wind['direction_deg']:.0f}°")
             
         elif msg_type == "hub_status" and "error" not in parsed_data:
             # Publish hub status data
+            timestamp = datetime.now(timezone.utc)
+            
             plugin.publish("tempest.hub.firmware", parsed_data["firmware"] or "unknown", 
-                         meta={"description": "Tempest hub firmware version", "source": "hub_status"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "description": "Tempest hub firmware version", 
+                               "source": "hub_status",
+                               "missing": "unknown"})
             plugin.publish("tempest.hub.uptime", parsed_data["uptime_s"] or 0, 
-                         meta={"units": "seconds", "description": "Tempest hub uptime", "source": "hub_status"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "seconds", 
+                               "description": "Tempest hub uptime", 
+                               "source": "hub_status",
+                               "missing": -9999.0})
             plugin.publish("tempest.hub.rssi", parsed_data["rssi"] or 0, 
-                         meta={"units": "dBm", "description": "Tempest hub signal strength", "source": "hub_status"})
+                         timestamp=timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "units": "dBm", 
+                               "description": "Tempest hub signal strength", 
+                               "source": "hub_status",
+                               "missing": -9999.0})
             
             logger.info(f"📡 Published hub_status data: firmware={parsed_data['firmware']}, uptime={parsed_data['uptime_s']}s, RSSI={parsed_data['rssi']}dBm")
             
         # Always publish a heartbeat/status message
+        status_timestamp = datetime.now(timezone.utc)
         plugin.publish("tempest.status", 1, 
-                     meta={"description": "Tempest plugin status (1=active, 0=error)", "last_update": int(time.time())})
+                     timestamp=status_timestamp,
+                     scope="beehive",
+                     meta={"sensor": "tempest-weather-station",
+                           "description": "Tempest plugin status (1=active, 0=error)", 
+                           "last_update": int(time.time()),
+                           "missing": -9999.0})
         
     except Exception as e:
         logger.error(f"Error publishing Tempest data: {e}")
+        error_timestamp = datetime.now(timezone.utc)
         plugin.publish("tempest.status", 0, 
-                     meta={"description": "Tempest plugin status (1=active, 0=error)", "error": str(e)})
+                     timestamp=error_timestamp,
+                     scope="beehive",
+                     meta={"sensor": "tempest-weather-station",
+                           "description": "Tempest plugin status (1=active, 0=error)", 
+                           "error": str(e),
+                           "missing": -9999.0})
 
 
 # ---------------- UDP Listener ----------------
@@ -310,8 +451,14 @@ def tempest_udp_listener(logger, udp_port=UDP_PORT):
         # Publish error status
         global plugin
         if plugin:
+            error_timestamp = datetime.now(timezone.utc)
             plugin.publish("tempest.status", 0, 
-                         meta={"description": "Tempest plugin status (1=active, 0=error)", "error": str(e)})
+                         timestamp=error_timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "description": "Tempest plugin status (1=active, 0=error)", 
+                               "error": str(e),
+                               "missing": -9999.0})
 
 
 # ---------------- Command Line Arguments ----------------
@@ -472,8 +619,14 @@ def main():
         # Cleanup
         logger.info("🧹 Cleaning up Tempest plugin...")
         if plugin:
+            shutdown_timestamp = datetime.now(timezone.utc)
             plugin.publish("tempest.status", 0, 
-                         meta={"description": "Tempest plugin status (1=active, 0=error)", "state": "shutdown"})
+                         timestamp=shutdown_timestamp,
+                         scope="beehive",
+                         meta={"sensor": "tempest-weather-station",
+                               "description": "Tempest plugin status (1=active, 0=error)", 
+                               "state": "shutdown",
+                               "missing": -9999.0})
 
 
 if __name__ == "__main__":

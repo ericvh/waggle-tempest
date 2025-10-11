@@ -1,5 +1,59 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-11 - Waggle Publishing Metadata Enhancement
+
+### Enhancement: Comprehensive Metadata with Scope and Sensor Information ✅
+
+**What was added**:
+- Added `scope="beehive"` parameter to all plugin.publish() calls
+- Added `sensor="tempest-weather-station"` to all metadata dictionaries
+- Added `missing=-9999.0` field to indicate missing/invalid values (numeric) or "unknown" (string)
+- Added explicit timestamps using `datetime.now(timezone.utc)` for all publications
+- Aligned with waggle-davis-wind-sensor plugin methodology for consistency
+
+**Metadata Structure** (following waggle-davis pattern):
+```python
+plugin.publish("tempest.wind.speed.avg", value,
+             timestamp=timestamp,
+             scope="beehive",
+             meta={"sensor": "tempest-weather-station",
+                   "units": "knots",
+                   "description": "Tempest average wind speed",
+                   "source": "obs_st",
+                   "missing": -9999.0})
+```
+
+**Key Changes**:
+1. **Scope**: All data published to "beehive" scope (central server for analysis)
+2. **Sensor**: Identifies data source as "tempest-weather-station"
+3. **Missing Value**: Standard indicator for invalid/missing data (-9999.0 numeric, "unknown" string)
+4. **Timestamps**: Explicit UTC timestamps for all measurements
+5. **Consistency**: Follows established Waggle ecosystem patterns
+
+**Benefits**:
+- Better data organization in Waggle ecosystem
+- Proper scoping for beehive vs node data
+- Standard missing value indicator for data quality
+- Improved metadata for downstream analysis
+- Consistency with other Waggle weather plugins
+
+**All publish() calls updated**:
+- Wind data (lull/avg/gust speeds, direction, instant readings)
+- Environmental data (temperature, humidity, pressure)
+- Light data (illuminance, UV index, solar radiation)
+- Precipitation data (since report, daily)
+- Lightning data (distance, strike count)
+- System data (battery, report interval)
+- Hub status (firmware, uptime, RSSI)
+- Plugin status (heartbeat, errors, shutdown)
+
+**Code Location**:
+- `main.py` lines 172-393: Updated publish_tempest_data() function
+- `main.py` lines 450-461: Updated UDP listener error status
+- `main.py` lines 618-629: Updated cleanup/shutdown status
+
+---
+
 ## 2025-10-11 - Environment Variable Support
 
 ### Enhancement: Complete Environment Variable Configuration ✅

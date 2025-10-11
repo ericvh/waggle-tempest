@@ -14,6 +14,11 @@ The Tempest Weather Station Waggle Plugin is now fully functional and ready for 
 - ✅ Add environment variable support for all command-line arguments
 - ✅ Add configuration priority system (CLI > ENV > Defaults)
 - ✅ Add startup indicators showing which env vars are active
+- ✅ Add scope="beehive" to all plugin.publish() calls
+- ✅ Add sensor="tempest-weather-station" metadata to all publications
+- ✅ Add missing value indicators (-9999.0 for numeric, "unknown" for strings)
+- ✅ Add explicit UTC timestamps to all publications
+- ✅ Align publishing methodology with waggle-davis-wind-sensor plugin
 - ✅ Create Docker container with proper networking
 - ✅ Add comprehensive README documentation with env var examples
 - ✅ Implement robust error handling and logging

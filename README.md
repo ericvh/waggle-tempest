@@ -18,6 +18,23 @@ This plugin extracts the Tempest functionality from the main waggle-davis projec
 
 ## Published Data Topics
 
+All data is published with:
+- **Scope**: `beehive` (data sent to central server for analysis)
+- **Sensor**: `tempest-weather-station` (identifies the data source)
+- **Missing Value**: `-9999.0` (numeric) or `"unknown"` (string) for invalid/missing data
+- **Timestamps**: Explicit UTC timestamps for all measurements
+
+Example metadata structure:
+```python
+{
+  "sensor": "tempest-weather-station",
+  "units": "knots",
+  "description": "Tempest average wind speed",
+  "source": "obs_st",
+  "missing": -9999.0
+}
+```
+
 ### Wind Data
 - `tempest.wind.speed.lull` - Wind lull speed (knots)
 - `tempest.wind.speed.avg` - Average wind speed (knots)
