@@ -1,5 +1,23 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Fix Plugin Initialization
+
+### Bugfix: Pass Config to Plugin() Constructor ✅
+
+**Issue**: Plugin() constructor requires config parameter
+**Error**: `TypeError: __init__() missing 1 required positional argument: 'config'`
+
+**Fix**: Pass empty config dict to Plugin constructor:
+```python
+with Plugin({}) as plugin:
+    # Uses default configuration
+```
+
+**Changes**:
+- `main.py` line 314: Changed `Plugin()` to `Plugin({})` 
+
+---
+
 ## 2025-10-11 - Refactor to Plugin Context Manager Pattern
 
 ### Refactor: Use `with Plugin() as plugin:` Pattern ✅

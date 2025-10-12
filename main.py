@@ -310,7 +310,8 @@ def main():
             logger.warning("   Or use the firewall-opener container from the main project")
     
     # Use Plugin context manager for proper lifecycle management
-    with Plugin() as plugin:
+    # Pass empty config dict for default configuration
+    with Plugin({}) as plugin:
         # Define publishing function as nested function with access to plugin via closure
         def publish_tempest_data(parsed_data, msg_type, force=False):
             """Publish Tempest data to Waggle message stream"""
