@@ -1,5 +1,54 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-11 - Refactor to Plugin Context Manager Pattern
+
+### Refactor: Use `with Plugin() as plugin:` Pattern ✅
+
+**What changed**:
+- Removed global `plugin` variable
+- Refactored main() to use `with Plugin() as plugin:` context manager
+- Moved publishing logic into main() as nested function inside with block
+- Publishing function now accesses plugin via closure (no global state)
+- Updated UDP listener to accept publish_callback parameter
+- Removed global plugin references throughout codebase
+
+**Benefits**:
+- **Proper Resource Management**: Context manager ensures plugin cleanup on exit
+- **Better Encapsulation**: Publishing logic has direct access to plugin via closure
+- **Thread Safety**: Eliminates global plugin state
+- **Cleaner Code**: Publishing function nested in appropriate scope
+- **Best Practice**: Follows Python context manager patterns
+
+**Code Structure**:
+```python
+def main():
+    # ... initialization ...
+    
+    with Plugin() as plugin:
+        # Define publishing as nested function with access to plugin
+        def publish_tempest_data(parsed_data, msg_type, force=False):
+            # Has access to plugin via closure
+            plugin.publish(...)
+        
+        # Start UDP listener with publish callback
+        udp_thread = threading.Thread(
+            target=tempest_udp_listener,
+            args=(logger, publish_tempest_data, udp_port)
+        )
+        
+        # Main loop inside with block
+        while True:
+            ...
+```
+
+**Changes**:
+- `main.py` lines 33-35: Removed global plugin variable
+- `main.py` lines 149-150: Removed standalone publish_tempest_data function
+- `main.py` lines 154: Updated tempest_udp_listener to accept publish_callback
+- `main.py` lines 312-526: Refactored main() with context manager and nested publishing function
+
+---
+
 ## 2025-10-11 - Waggle Publishing Metadata Enhancement
 
 ### Enhancement: Comprehensive Metadata with Scope and Sensor Information ✅
