@@ -1,5 +1,56 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Add Sesctl Deployment Configuration
+
+### Enhancement: Plugin Deployment Configuration ✅
+
+**What was added**:
+- Created `plugin-tempest.yaml` sesctl deployment configuration
+- Based on `plugin-davis6410.yaml` from waggle-davis-wind-sensor repository
+- Configured for TCP protocol with appropriate arguments and settings
+
+**Sesctl Configuration Features**:
+- **Plugin name**: `plugin-tempest` for consistent identification
+- **Image**: `ghcr.io/ericvh/waggle-tempest:latest` (GitHub Container Registry)
+- **Protocol**: TCP with port 50222 for length-prefixed messages
+- **Arguments**: Configured for TCP mode with 60-second publish interval
+- **Node targeting**: W017 node with core zone selector
+- **Security**: Non-privileged execution for enhanced security
+- **Scheduling**: Continuous operation with 1-day success criteria
+
+**Configuration Details**:
+- **Protocol**: TCP (default) with `--no-firewall` flag for containerized deployment
+- **Port**: 50222 for TCP connections
+- **Publish interval**: 60 seconds to prevent message overflow
+- **Zone selector**: Core zone for appropriate node placement
+- **Success criteria**: WallClock('1day') for continuous operation
+
+**Files added**:
+- `plugin-tempest.yaml` - Complete sesctl deployment configuration
+
+**Files modified**:
+- `TODO.md` - Marked sesctl configuration task as completed
+
+**Deployment Usage**:
+```bash
+# Deploy using sesctl
+sesctl apply -f plugin-tempest.yaml
+
+# Check deployment status
+sesctl get plugins
+
+# View plugin logs
+sesctl logs plugin-tempest
+```
+
+**Benefits**:
+- **Production-ready**: Based on proven plugin-davis6410.yaml template
+- **TCP optimized**: Configured for reliable TCP connections
+- **Container-friendly**: Non-privileged and firewall-aware settings
+- **Sage-compatible**: Follows SAGE edge deployment patterns
+
+---
+
 ## 2025-10-12 - Add TCP Protocol Support with Length-Prefixed Messages
 
 ### Enhancement: TCP Protocol as Default with UDP Fallback ✅

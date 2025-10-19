@@ -110,6 +110,28 @@ pip install -r requirements.txt
 python3 main.py
 ```
 
+### Sesctl Deployment (SAGE Edge)
+
+For SAGE edge deployments, use the provided `plugin-tempest.yaml` configuration:
+
+```bash
+# Deploy using sesctl
+sesctl apply -f plugin-tempest.yaml
+
+# Check deployment status
+sesctl get plugins
+
+# View plugin logs
+sesctl logs plugin-tempest
+```
+
+The `plugin-tempest.yaml` configuration includes:
+- TCP protocol for reliable data reception
+- Port 50222 for Tempest connections
+- 60-second publish interval to prevent message overflow
+- Non-privileged execution for security
+- Continuous operation with proper success criteria
+
 ## Usage
 
 ### Basic Usage
