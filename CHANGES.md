@@ -1,5 +1,42 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Add Development Guide and Best Practices
+
+### Enhancement: DEVELOPMENT.md Documentation ✅
+
+**What was added**:
+- Created comprehensive DEVELOPMENT.md with best practices
+- Documented development workflow and standards
+- Established documentation update requirements
+
+**Content includes**:
+- Documentation requirements (README.md, CHANGES.md, TODO.md updates)
+- Git workflow and commit message standards
+- Code quality guidelines
+- File organization standards
+- Development checklist
+- Waggle integration standards
+- Environment and deployment guidelines
+- Maintenance procedures
+
+**Key Standards Established**:
+1. **Always update README.md** for user-facing changes
+2. **Always update CHANGES.md** for detailed changelog entries
+3. **Always maintain TODO.md** with current work status
+4. **Always commit changes** with comprehensive messages
+5. **Update in order**: Code → README → CHANGES → TODO → Git commit
+
+**Benefits**:
+- Ensures consistent project maintenance
+- Establishes clear development workflow
+- Documents professional best practices
+- Provides quick reference for developers
+
+**Files added**:
+- `DEVELOPMENT.md` - Complete development guide (new file)
+
+---
+
 ## 2025-10-12 - Fix Plugin Initialization
 
 ### Bugfix: Pass Config to Plugin() Constructor ✅

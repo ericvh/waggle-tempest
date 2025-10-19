@@ -347,13 +347,23 @@ python3 main.py --udp-port 50223 --debug
 
 MIT License - see LICENSE file for details.
 
+## Development
+
+For developers working on this plugin, see [DEVELOPMENT.md](DEVELOPMENT.md) for:
+- Development workflow and best practices
+- Documentation standards and requirements
+- Git workflow and commit guidelines
+- Code quality standards
+- Testing and deployment procedures
+
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+3. Make your changes following [DEVELOPMENT.md](DEVELOPMENT.md) guidelines
+4. Update README.md, CHANGES.md, and TODO.md as needed
+5. Test thoroughly
+6. Submit a pull request
 
 ## Support
 
