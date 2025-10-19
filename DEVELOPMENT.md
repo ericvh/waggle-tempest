@@ -126,12 +126,52 @@ When making changes, update files in this order:
 Before committing any changes, verify:
 
 - [ ] Code changes are working and tested
+- [ ] **Syntax checks pass** (see Syntax Checking section below)
 - [ ] README.md is updated with new features/examples
 - [ ] CHANGES.md includes detailed changelog entry
 - [ ] TODO.md reflects current status
-- [ ] No linting errors (`python -m flake8 main.py`)
 - [ ] Commit message is comprehensive
 - [ ] Working directory is clean before commit
+
+#### Syntax Checking
+
+**Required checks before every commit**:
+
+1. **Python Syntax Check**:
+   ```bash
+   python3 -m py_compile main.py
+   ```
+
+2. **Python Linting** (if flake8 is available):
+   ```bash
+   python3 -m flake8 main.py --max-line-length=100
+   ```
+
+3. **Basic Import Test**:
+   ```bash
+   python3 -c "import main" 2>/dev/null || echo "Import test failed"
+   ```
+
+**Automated syntax check script**:
+Use the included `check-syntax.sh` script for comprehensive checking:
+```bash
+./check-syntax.sh
+```
+
+This script performs:
+- Python syntax validation (`py_compile`)
+- Import testing (handles development environments)
+- Code quality checks (long lines, print statements)
+- Optional flake8 linting (if available)
+- File permission verification
+- Required file presence checks
+
+**Check requirements**:
+- No syntax errors (py_compile must succeed)
+- Standard library imports work correctly
+- Waggle imports are optional in development environments
+- Basic code quality issues are flagged (warnings only)
+- Required files (main.py, README.md, requirements.txt) are present
 
 ### 6. Documentation Standards
 
@@ -262,11 +302,12 @@ This shows detailed logging for development and troubleshooting.
 ## Quick Reference
 
 ### Before Every Commit:
-1. Update README.md ✅
-2. Update CHANGES.md ✅  
-3. Update TODO.md ✅
-4. Test changes ✅
-5. Git commit with detailed message ✅
+1. Run syntax checks ✅
+2. Update README.md ✅
+3. Update CHANGES.md ✅  
+4. Update TODO.md ✅
+5. Test changes ✅
+6. Git commit with detailed message ✅
 
 ### File Update Order:
 1. Code (main.py)
