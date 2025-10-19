@@ -1,0 +1,53 @@
+# Git and development files
+.git
+.gitignore
+.github/
+*.md
+!README.md
+
+# Development files
+DEVELOPMENT.md
+CHANGES.md
+TODO.md
+check-syntax.sh
+
+# Documentation and metadata
+ecr-meta/
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Python cache and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
+
+# Test files
+test/
+tests/
+*_test.py
+test_*.py

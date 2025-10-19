@@ -1,5 +1,57 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Add GitHub Multi-Architecture Docker Build Workflow
+
+### Enhancement: Automated Multi-Arch Docker Builds ✅
+
+**What was added**:
+- Created GitHub Actions workflow for automated multi-architecture Docker builds
+- Added support for building and publishing images for both amd64 and arm64 architectures
+- Integrated with GitHub Container Registry (GHCR) for automatic image publishing
+- Added comprehensive build metadata and artifact attestation
+
+**GitHub Workflow Features**:
+- **Multi-architecture builds**: Automatically builds for linux/amd64 and linux/arm64
+- **Automated publishing**: Pushes to GitHub Container Registry on main branch pushes and tags
+- **Smart tagging**: Uses semantic versioning, branch names, and commit SHA for tags
+- **Build caching**: Utilizes GitHub Actions cache for faster builds
+- **Security**: Includes build provenance attestation for supply chain security
+- **Comprehensive output**: Generates detailed build summaries with usage examples
+
+**Workflow Triggers**:
+- Push to `main` branch (builds and publishes)
+- Tag creation starting with `v*` (builds and publishes semantic versions)
+- Pull requests to `main` (builds only, for testing)
+
+**Files added**:
+- `.github/workflows/docker-build.yml` - Complete multi-arch build and publish workflow
+- `.dockerignore` - Optimized Docker build context excluding unnecessary files
+
+**Files modified**:
+- `README.md` - Updated installation and usage sections to include GitHub Container Registry
+- Added documentation for multi-architecture image usage and examples
+
+**Registry and Image Information**:
+- **Registry**: `ghcr.io`
+- **Image**: `ghcr.io/[USERNAME]/waggle-tempest`
+- **Architectures**: amd64, arm64
+- **Tags**: `latest`, `main`, semantic versions (v1.0.0), commit-based tags
+
+**Benefits**:
+- **Cross-platform compatibility**: Runs on both Intel/AMD and ARM64 systems
+- **Automated deployment**: No manual build steps required
+- **Version management**: Automatic semantic versioning support
+- **Security**: Build attestation and provenance tracking
+- **Developer experience**: Easy pull and run for any supported architecture
+
+**Usage**:
+```bash
+# Pull latest multi-arch image
+docker run --network host ghcr.io/[USERNAME]/waggle-tempest:latest
+```
+
+---
+
 ## 2025-10-12 - Add Syntax Checking to Development Workflow
 
 ### Enhancement: Automated Syntax Checking ✅

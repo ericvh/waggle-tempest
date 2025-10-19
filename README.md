@@ -73,9 +73,27 @@ Example metadata structure:
 
 ### Docker (Recommended)
 
+#### Using Pre-built Multi-Arch Images
+
+The plugin is automatically built and published as multi-architecture Docker images (amd64, arm64) on GitHub Container Registry:
+
 ```bash
-# Build the container
-cd tempest-plugin
+# Pull and run the latest image
+docker run --network host ghcr.io/[YOUR_USERNAME]/waggle-tempest:latest
+
+# Run with custom environment variables
+docker run --network host \
+  -e TEMPEST_DEBUG=true \
+  -e TEMPEST_PUBLISH_INTERVAL=30 \
+  ghcr.io/[YOUR_USERNAME]/waggle-tempest:latest
+```
+
+#### Building from Source
+
+```bash
+# Clone and build the container
+git clone <repository-url>
+cd waggle-tempest
 docker build -t tempest-weather-plugin .
 
 # Run with host networking (required for UDP broadcasts)
@@ -112,7 +130,32 @@ python3 main.py --publish-interval 30
 
 ### Docker Usage
 
+#### Using GitHub Container Registry (Multi-Arch)
+
 ```bash
+# Basic deployment using pre-built multi-arch image
+docker run --network host ghcr.io/[YOUR_USERNAME]/waggle-tempest:latest
+
+# With environment variables
+docker run --network host \
+  -e TEMPEST_UDP_PORT=50222 \
+  -e TEMPEST_PUBLISH_INTERVAL=30 \
+  -e TEMPEST_DEBUG=true \
+  ghcr.io/[YOUR_USERNAME]/waggle-tempest:latest
+
+# With command-line arguments (overrides environment variables)
+docker run --network host ghcr.io/[YOUR_USERNAME]/waggle-tempest:latest \
+  --debug \
+  --udp-port 50223 \
+  --publish-interval 45
+```
+
+#### Local Build Usage
+
+```bash
+# Build locally first
+docker build -t tempest-weather-plugin .
+
 # Basic deployment (uses defaults)
 docker run --network host tempest-weather-plugin
 
@@ -123,17 +166,6 @@ docker run --network host \
   -e TEMPEST_DEBUG=true \
   -e TEMPEST_NO_FIREWALL=false \
   tempest-weather-plugin
-
-# With command-line arguments (overrides environment variables)
-docker run --network host tempest-weather-plugin \
-  --debug \
-  --udp-port 50223 \
-  --publish-interval 45
-
-# Mix of environment variables and arguments
-docker run --network host \
-  -e TEMPEST_PUBLISH_INTERVAL=30 \
-  tempest-weather-plugin --debug
 ```
 
 ## Configuration
