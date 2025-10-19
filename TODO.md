@@ -29,7 +29,6 @@ The Tempest Weather Station Waggle Plugin is now fully functional and ready for 
 - ✅ Create DEVELOPMENT.md with comprehensive development guidelines and best practices
 - ✅ Add automated syntax checking to development workflow with check-syntax.sh script
 - ✅ Add GitHub Actions workflow for automated multi-architecture Docker builds (amd64, arm64)
-- ✅ Add comprehensive sesctl.yaml configuration for Waggle edge deployments
 
 ## Published Waggle Topics
 
