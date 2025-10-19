@@ -4,11 +4,14 @@
 Tempest Weather Station Waggle Plugin
 =====================================
 
-A Waggle plugin that receives UDP broadcasts from a local Tempest weather station
-and publishes the data to the Waggle message stream.
+A Waggle plugin that receives TCP length-prefixed messages or UDP broadcasts from 
+a local Tempest weather station and publishes the data to the Waggle message stream.
 
 This plugin extracts the Tempest functionality from the main waggle-davis project
 and provides it as a standalone service for publishing Tempest weather data.
+
+Default protocol is TCP with length-prefixed JSON messages for improved reliability.
+UDP broadcast mode is also supported for backward compatibility.
 """
 
 import argparse
@@ -22,8 +25,10 @@ from datetime import datetime, timezone
 from waggle.plugin import Plugin
 
 
-# Tempest UDP broadcast port
+# Tempest network configuration
 UDP_PORT = 50222
+TCP_PORT = 50222
+DEFAULT_PROTOCOL = "tcp"  # TCP is now the default protocol
 
 # Global Tempest data storage
 tempest_data_lock = threading.Lock()
@@ -208,6 +213,124 @@ def tempest_udp_listener(logger, publish_callback, udp_port=UDP_PORT):
         # Error will be handled by main function
 
 
+# ---------------- TCP Listener ----------------
+def tempest_tcp_listener(logger, publish_callback, tcp_port=TCP_PORT):
+    """TCP listener thread for Tempest length-prefixed messages"""
+    try:
+        server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server_sock.bind(("0.0.0.0", tcp_port))
+        server_sock.listen(5)
+        
+        logger.info(f"🌐 Tempest TCP listener started on port {tcp_port}")
+        logger.info("📡 Waiting for TCP connections with length-prefixed JSON messages...")
+        
+        while True:
+            try:
+                # Accept incoming connections
+                client_sock, addr = server_sock.accept()
+                logger.debug(f"📡 Accepted TCP connection from {addr[0]}:{addr[1]}")
+                
+                # Handle messages from this client
+                handle_tcp_client(client_sock, addr, logger, publish_callback)
+                
+            except Exception as e:
+                logger.error(f"TCP listener error: {e}")
+                continue
+                
+    except Exception as e:
+        logger.error(f"Failed to start Tempest TCP listener: {e}")
+        # Error will be handled by main function
+
+
+def handle_tcp_client(client_sock, addr, logger, publish_callback):
+    """Handle messages from a TCP client connection"""
+    try:
+        while True:
+            # Read length prefix (4 bytes, big-endian)
+            length_data = recv_exactly(client_sock, 4, logger)
+            if not length_data:
+                break
+                
+            # Unpack length
+            msg_length = int.from_bytes(length_data, byteorder='big')
+            
+            if msg_length <= 0 or msg_length > 65535:  # Reasonable limits
+                logger.warning(f"Invalid message length: {msg_length} from {addr[0]}")
+                break
+            
+            # Read the actual message
+            msg_data = recv_exactly(client_sock, msg_length, logger)
+            if not msg_data:
+                break
+                
+            try:
+                # Parse JSON message
+                msg = json.loads(msg_data.decode("utf-8"))
+                msg_type = msg.get("type", "unknown")
+                
+                logger.debug(f"📥 Received {msg_type} TCP message from {addr[0]} ({msg_length} bytes)")
+                
+                # Store the raw message by type
+                with tempest_data_lock:
+                    latest_tempest_raw_by_type[msg_type] = msg
+                    
+                    # If we have a parser for this type, also store parsed
+                    parser = TEMPEST_PARSERS.get(msg_type)
+                    if parser:
+                        try:
+                            parsed_data = parser(msg)
+                            latest_tempest_parsed_by_type[msg_type] = {
+                                "type": msg_type,
+                                "data": parsed_data
+                            }
+                            
+                            # Attempt to publish the data (will be throttled based on publish_interval)
+                            publish_callback(parsed_data, msg_type)
+                            
+                        except Exception as e:
+                            logger.error(f"Error parsing {msg_type} message: {e}")
+                            # Skip parsing errors but continue listening
+                    else:
+                        # If no parser, remove any stale parsed entry
+                        if msg_type in latest_tempest_parsed_by_type:
+                            del latest_tempest_parsed_by_type[msg_type]
+                        logger.debug(f"Received unknown message type: {msg_type}")
+                        
+            except json.JSONDecodeError as e:
+                logger.warning(f"Invalid JSON from {addr[0]}: {e}")
+                continue
+            except Exception as e:
+                logger.error(f"Error processing TCP message from {addr[0]}: {e}")
+                continue
+                
+    except Exception as e:
+        logger.debug(f"TCP client {addr[0]} disconnected: {e}")
+    finally:
+        try:
+            client_sock.close()
+        except:
+            pass
+
+
+def recv_exactly(sock, num_bytes, logger):
+    """Receive exactly num_bytes from socket"""
+    data = b""
+    while len(data) < num_bytes:
+        try:
+            chunk = sock.recv(num_bytes - len(data))
+            if not chunk:
+                return None  # Connection closed
+            data += chunk
+        except socket.timeout:
+            logger.warning("TCP receive timeout")
+            return None
+        except Exception as e:
+            logger.error(f"TCP receive error: {e}")
+            return None
+    return data
+
+
 # ---------------- Command Line Arguments ----------------
 def parse_args():
     """Parse command line arguments with environment variable support"""
@@ -218,21 +341,35 @@ def parse_args():
         return val in ("true", "1", "yes", "on")
     
     # Get defaults from environment variables or use hardcoded defaults
+    default_protocol = os.getenv("TEMPEST_PROTOCOL", DEFAULT_PROTOCOL).lower()
+    default_tcp_port = int(os.getenv("TEMPEST_TCP_PORT", TCP_PORT))
     default_udp_port = int(os.getenv("TEMPEST_UDP_PORT", UDP_PORT))
     default_debug = env_bool("TEMPEST_DEBUG")
     default_publish_interval = int(os.getenv("TEMPEST_PUBLISH_INTERVAL", "60"))
     default_no_firewall = env_bool("TEMPEST_NO_FIREWALL")
     
     parser = argparse.ArgumentParser(
-        description="Tempest Weather Station Waggle Plugin - publishes Tempest UDP data to Waggle stream",
-        epilog="All arguments can be set via environment variables: TEMPEST_UDP_PORT, TEMPEST_DEBUG, "
-               "TEMPEST_PUBLISH_INTERVAL, TEMPEST_NO_FIREWALL"
+        description="Tempest Weather Station Waggle Plugin - publishes Tempest data to Waggle stream",
+        epilog="All arguments can be set via environment variables: TEMPEST_PROTOCOL, TEMPEST_TCP_PORT, "
+               "TEMPEST_UDP_PORT, TEMPEST_DEBUG, TEMPEST_PUBLISH_INTERVAL, TEMPEST_NO_FIREWALL"
+    )
+    parser.add_argument(
+        "--protocol",
+        choices=["tcp", "udp"],
+        default=default_protocol,
+        help=f"Protocol to use for receiving data (default: {DEFAULT_PROTOCOL}, env: TEMPEST_PROTOCOL)"
+    )
+    parser.add_argument(
+        "--tcp-port", 
+        type=int,
+        default=default_tcp_port,
+        help=f"TCP port to listen on for length-prefixed messages (default: {TCP_PORT}, env: TEMPEST_TCP_PORT)"
     )
     parser.add_argument(
         "--udp-port", 
         type=int,
         default=default_udp_port, 
-        help=f"UDP port to listen for Tempest broadcasts (default: {UDP_PORT}, env: TEMPEST_UDP_PORT)"
+        help=f"UDP port to listen for broadcasts (default: {UDP_PORT}, env: TEMPEST_UDP_PORT)"
     )
     parser.add_argument(
         "--debug", 
@@ -277,6 +414,10 @@ def main():
     
     # Show configuration with source indicators
     env_indicators = []
+    if os.getenv("TEMPEST_PROTOCOL"):
+        env_indicators.append("PROTOCOL")
+    if os.getenv("TEMPEST_TCP_PORT"):
+        env_indicators.append("TCP_PORT")
     if os.getenv("TEMPEST_UDP_PORT"):
         env_indicators.append("UDP_PORT")
     if os.getenv("TEMPEST_PUBLISH_INTERVAL"):
@@ -286,7 +427,11 @@ def main():
     if os.getenv("TEMPEST_NO_FIREWALL"):
         env_indicators.append("NO_FIREWALL")
     
-    logger.info(f"UDP Port: {args.udp_port}")
+    logger.info(f"Protocol: {args.protocol.upper()}")
+    if args.protocol == "tcp":
+        logger.info(f"TCP Port: {args.tcp_port}")
+    else:
+        logger.info(f"UDP Port: {args.udp_port}")
     logger.info(f"Publish Interval: {args.publish_interval} seconds")
     logger.info(f"Debug Mode: {args.debug}")
     logger.info(f"No Firewall Check: {args.no_firewall}")
@@ -296,22 +441,30 @@ def main():
     
     # Check port accessibility
     if not args.no_firewall:
-        logger.info("🔍 Checking UDP port accessibility...")
+        port_to_check = args.tcp_port if args.protocol == "tcp" else args.udp_port
+        logger.info(f"🔍 Checking {args.protocol.upper()} port accessibility...")
         try:
-            test_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            if args.protocol == "tcp":
+                test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            else:
+                test_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             test_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            test_sock.bind(("0.0.0.0", args.udp_port))
+            test_sock.bind(("0.0.0.0", port_to_check))
             test_sock.close()
-            logger.info(f"✓ UDP port {args.udp_port} is accessible")
+            logger.info(f"✓ {args.protocol.upper()} port {port_to_check} is accessible")
         except Exception as e:
-            logger.warning(f"⚠️  UDP port {args.udp_port} binding failed: {e}")
-            logger.warning("💡 You may need to configure firewall rules:")
-            logger.warning(f"   sudo iptables -I INPUT -p udp --dport {args.udp_port} -j ACCEPT")
-            logger.warning("   Or use the firewall-opener container from the main project")
+            logger.warning(f"⚠️  {args.protocol.upper()} port {port_to_check} binding failed: {e}")
+            if args.protocol == "tcp":
+                logger.warning("💡 You may need to configure firewall rules:")
+                logger.warning(f"   sudo iptables -I INPUT -p tcp --dport {port_to_check} -j ACCEPT")
+            else:
+                logger.warning("💡 You may need to configure firewall rules:")
+                logger.warning(f"   sudo iptables -I INPUT -p udp --dport {port_to_check} -j ACCEPT")
+                logger.warning("   Or use the firewall-opener container from the main project")
     
     # Use Plugin context manager for proper lifecycle management
     # Pass empty config dict for default configuration
-    with Plugin() as plugin:
+    with Plugin({}) as plugin:
         # Define publishing function as nested function with access to plugin via closure
         def publish_tempest_data(parsed_data, msg_type, force=False):
             """Publish Tempest data to Waggle message stream"""
@@ -466,17 +619,28 @@ def main():
                                    "description": "Tempest plugin status (1=active, 0=error)", 
                                    "error": str(e), "missing": -9999.0})
         
-        # Start UDP listener thread with publish callback
-        logger.info("🌐 Starting Tempest UDP listener thread...")
-        udp_thread = threading.Thread(
-            target=tempest_udp_listener, 
-            args=(logger, publish_tempest_data, args.udp_port),
-            daemon=True
-        )
-        udp_thread.start()
+        # Start appropriate listener thread based on protocol
+        if args.protocol == "tcp":
+            logger.info("🌐 Starting Tempest TCP listener thread...")
+            listener_thread = threading.Thread(
+                target=tempest_tcp_listener, 
+                args=(logger, publish_tempest_data, args.tcp_port),
+                daemon=True
+            )
+            wait_msg = "⏳ Waiting for Tempest TCP connections with length-prefixed messages..."
+        else:
+            logger.info("🌐 Starting Tempest UDP listener thread...")
+            listener_thread = threading.Thread(
+                target=tempest_udp_listener, 
+                args=(logger, publish_tempest_data, args.udp_port),
+                daemon=True
+            )
+            wait_msg = "⏳ Waiting for Tempest UDP broadcasts..."
+        
+        listener_thread.start()
         
         # Wait for initial data
-        logger.info("⏳ Waiting for Tempest UDP broadcasts...")
+        logger.info(wait_msg)
         time.sleep(5)  # Give some time for initial data
         
         # Check if we received any data
@@ -488,9 +652,14 @@ def main():
             else:
                 logger.warning("⚠️  No Tempest data received yet")
                 logger.info("💡 Troubleshooting:")
-                logger.info("   1. Check that Tempest hub is on the same network")
-                logger.info("   2. Verify Tempest station is broadcasting (usually enabled by default)")
-                logger.info("   3. Check firewall/router settings for UDP port 50222")
+                if args.protocol == "tcp":
+                    logger.info("   1. Check that Tempest hub is configured to send TCP data")
+                    logger.info("   2. Verify TCP connections can be established on the configured port")
+                    logger.info(f"   3. Check firewall/router settings for TCP port {args.tcp_port}")
+                else:
+                    logger.info("   1. Check that Tempest hub is on the same network")
+                    logger.info("   2. Verify Tempest station is broadcasting (usually enabled by default)")
+                    logger.info(f"   3. Check firewall/router settings for UDP port {args.udp_port}")
                 logger.info("   4. Try running with --no-firewall if you've already configured firewall")
         
         logger.info("")
@@ -500,7 +669,7 @@ def main():
         
         try:
             # Main loop - just keep the plugin running
-            # The UDP listener thread handles all data processing and publishing
+            # The listener thread handles all data processing and publishing
             while True:
                 time.sleep(60)  # Check every minute
                 

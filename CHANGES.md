@@ -1,5 +1,70 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Add TCP Protocol Support with Length-Prefixed Messages
+
+### Enhancement: TCP Protocol as Default with UDP Fallback ✅
+
+**What was added**:
+- Added TCP protocol support with length-prefixed message handling as the default protocol
+- Implemented robust TCP server that accepts multiple client connections
+- Added length-prefixed message parsing for improved reliability over TCP
+- Maintained UDP support for backward compatibility
+- Enhanced configuration options and environment variable support
+
+**TCP Implementation Features**:
+- **Length-prefixed messages**: 4-byte big-endian length prefix followed by JSON payload
+- **Multiple client support**: Handles concurrent TCP connections from multiple clients
+- **Robust error handling**: Graceful handling of connection drops and malformed messages
+- **Message validation**: Proper bounds checking and JSON validation
+- **Connection management**: Automatic cleanup of disconnected clients
+
+**Configuration Enhancements**:
+- **New protocol option**: `--protocol tcp|udp` with TCP as default
+- **Separate port configuration**: `--tcp-port` and `--udp-port` arguments
+- **Environment variables**: `TEMPEST_PROTOCOL`, `TEMPEST_TCP_PORT`, `TEMPEST_UDP_PORT`
+- **Backward compatibility**: All existing UDP configurations continue to work
+
+**Files modified**:
+- `main.py` - Added TCP listener functions and protocol selection logic (lines 213-328)
+- Updated argument parser with new protocol and port options (lines 340-370)
+- Enhanced main function with protocol-aware listener startup (lines 619-641)
+- Updated configuration display and troubleshooting messages
+
+**Files updated**:
+- `Dockerfile` - Updated environment variables and entrypoint script for TCP default
+- `README.md` - Updated configuration documentation and usage examples
+
+**Protocol Details**:
+- **TCP Format**: `[4-byte length][JSON message]` where length is big-endian
+- **Default port**: 50222 for both protocols
+- **Message limits**: 1-65535 bytes per message for safety
+- **Connection handling**: Server listens for connections, handles multiple clients
+
+**Benefits**:
+- **Improved reliability**: TCP provides guaranteed delivery and ordering
+- **Better error handling**: Connection state management and cleanup
+- **Scalability**: Support for multiple Tempest stations via TCP connections
+- **Backward compatibility**: UDP mode still available for existing deployments
+
+**Usage Examples**:
+```bash
+# Default TCP mode
+python3 main.py
+
+# UDP mode (backward compatibility)
+python3 main.py --protocol udp
+
+# Custom TCP port
+python3 main.py --tcp-port 50223
+
+# Environment variable configuration
+export TEMPEST_PROTOCOL=tcp
+export TEMPEST_TCP_PORT=50222
+python3 main.py
+```
+
+---
+
 ## 2025-10-12 - Add GitHub Multi-Architecture Docker Build Workflow
 
 ### Enhancement: Automated Multi-Arch Docker Builds ✅

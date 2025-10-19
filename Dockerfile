@@ -20,6 +20,8 @@ WORKDIR /app
 RUN chmod +x main.py
 
 # Set default environment variables
+ENV TEMPEST_PROTOCOL=tcp
+ENV TEMPEST_TCP_PORT=50222
 ENV TEMPEST_UDP_PORT=50222
 ENV TEMPEST_PUBLISH_INTERVAL=60
 ENV TEMPEST_DEBUG=false
@@ -29,28 +31,39 @@ RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
 # Default values\n\
+PROTOCOL="${TEMPEST_PROTOCOL:-tcp}"\n\
+TCP_PORT="${TEMPEST_TCP_PORT:-50222}"\n\
 UDP_PORT="${TEMPEST_UDP_PORT:-50222}"\n\
 PUBLISH_INTERVAL="${TEMPEST_PUBLISH_INTERVAL:-60}"\n\
 DEBUG="${TEMPEST_DEBUG:-false}"\n\
 \n\
 echo "🌤️  Tempest Weather Station Waggle Plugin Starting..."\n\
-echo "UDP Port: $UDP_PORT"\n\
+echo "Protocol: ${PROTOCOL^^}"\n\
+if [ "$PROTOCOL" = "tcp" ]; then\n\
+    echo "TCP Port: $TCP_PORT"\n\
+    echo "✓ Container ready for TCP connections with length-prefixed messages"\n\
+else\n\
+    echo "UDP Port: $UDP_PORT"\n\
+    if [ -w /proc/sys/net ] 2>/dev/null; then\n\
+        echo "✓ Container has network privileges for UDP listening"\n\
+    else\n\
+        echo "⚠️  Warning: Limited network privileges"\n\
+        echo "   UDP listening may not work properly"\n\
+        echo "   Consider using: --network host"\n\
+    fi\n\
+fi\n\
 echo "Publish Interval: $PUBLISH_INTERVAL seconds"\n\
 echo "Debug Mode: $DEBUG"\n\
 echo ""\n\
 \n\
-# Check if we have network access\n\
-if [ -w /proc/sys/net ] 2>/dev/null; then\n\
-    echo "✓ Container has network privileges for UDP listening"\n\
-else\n\
-    echo "⚠️  Warning: Limited network privileges"\n\
-    echo "   UDP listening may not work properly"\n\
-    echo "   Consider using: --network host"\n\
-fi\n\
-echo ""\n\
-\n\
 # Build command line arguments\n\
-ARGS=("--udp-port" "$UDP_PORT" "--publish-interval" "$PUBLISH_INTERVAL")\n\
+ARGS=("--protocol" "$PROTOCOL" "--publish-interval" "$PUBLISH_INTERVAL")\n\
+\n\
+if [ "$PROTOCOL" = "tcp" ]; then\n\
+    ARGS+=("--tcp-port" "$TCP_PORT")\n\
+else\n\
+    ARGS+=("--udp-port" "$UDP_PORT")\n\
+fi\n\
 \n\
 if [ "$DEBUG" = "true" ]; then\n\
     ARGS+=("--debug")\n\

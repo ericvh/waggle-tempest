@@ -115,14 +115,20 @@ python3 main.py
 ### Basic Usage
 
 ```bash
-# Run with default settings
+# Run with default settings (TCP protocol)
 python3 main.py
 
 # Run with debug output
 python3 main.py --debug
 
+# Use UDP protocol instead of TCP
+python3 main.py --protocol udp
+
+# Use custom TCP port
+python3 main.py --tcp-port 50223
+
 # Use custom UDP port
-python3 main.py --udp-port 50223
+python3 main.py --protocol udp --udp-port 50223
 
 # Set custom publish interval
 python3 main.py --publish-interval 30
@@ -136,15 +142,24 @@ python3 main.py --publish-interval 30
 # Basic deployment using pre-built multi-arch image
 docker run --network host ghcr.io/[YOUR_USERNAME]/waggle-tempest:latest
 
-# With environment variables
+# With environment variables (TCP default)
 docker run --network host \
-  -e TEMPEST_UDP_PORT=50222 \
+  -e TEMPEST_PROTOCOL=tcp \
+  -e TEMPEST_TCP_PORT=50222 \
   -e TEMPEST_PUBLISH_INTERVAL=30 \
+  -e TEMPEST_DEBUG=true \
+  ghcr.io/[YOUR_USERNAME]/waggle-tempest:latest
+
+# With UDP protocol
+docker run --network host \
+  -e TEMPEST_PROTOCOL=udp \
+  -e TEMPEST_UDP_PORT=50222 \
   -e TEMPEST_DEBUG=true \
   ghcr.io/[YOUR_USERNAME]/waggle-tempest:latest
 
 # With command-line arguments (overrides environment variables)
 docker run --network host ghcr.io/[YOUR_USERNAME]/waggle-tempest:latest \
+  --protocol udp \
   --debug \
   --udp-port 50223 \
   --publish-interval 45
@@ -176,16 +191,23 @@ All configuration options can be set via either **environment variables** or **c
 
 | Variable | Description | Type | Default |
 |----------|-------------|------|---------|
-| `TEMPEST_UDP_PORT` | UDP port to listen for broadcasts | integer | `50222` |
+| `TEMPEST_PROTOCOL` | Protocol to use (`tcp` or `udp`) | string | `tcp` |
+| `TEMPEST_TCP_PORT` | TCP port for length-prefixed messages | integer | `50222` |
+| `TEMPEST_UDP_PORT` | UDP port for broadcasts | integer | `50222` |
 | `TEMPEST_PUBLISH_INTERVAL` | Minimum publish interval in seconds | integer | `60` |
 | `TEMPEST_DEBUG` | Enable debug output | boolean | `false` |
 | `TEMPEST_NO_FIREWALL` | Skip firewall setup warnings | boolean | `false` |
+
+**Protocol Details**:
+- **TCP (default)**: Receives length-prefixed JSON messages over TCP connections for improved reliability
+- **UDP**: Receives JSON broadcasts over UDP for backward compatibility
 
 **Boolean values**: Use `true`, `1`, `yes`, or `on` for true; anything else is false.
 
 **Example**:
 ```bash
-export TEMPEST_UDP_PORT=50222
+export TEMPEST_PROTOCOL=tcp
+export TEMPEST_TCP_PORT=50222
 export TEMPEST_PUBLISH_INTERVAL=30
 export TEMPEST_DEBUG=true
 export TEMPEST_NO_FIREWALL=false
@@ -196,7 +218,9 @@ python3 main.py
 
 | Argument | Description | Type | Default | Env Variable |
 |----------|-------------|------|---------|--------------|
-| `--udp-port PORT` | UDP port for Tempest broadcasts | integer | `50222` | `TEMPEST_UDP_PORT` |
+| `--protocol PROTOCOL` | Protocol to use (`tcp` or `udp`) | string | `tcp` | `TEMPEST_PROTOCOL` |
+| `--tcp-port PORT` | TCP port for length-prefixed messages | integer | `50222` | `TEMPEST_TCP_PORT` |
+| `--udp-port PORT` | UDP port for broadcasts | integer | `50222` | `TEMPEST_UDP_PORT` |
 | `--publish-interval SECONDS` | Minimum publish interval | integer | `60` | `TEMPEST_PUBLISH_INTERVAL` |
 | `--debug` | Enable debug output | flag | `false` | `TEMPEST_DEBUG` |
 | `--no-firewall` | Skip firewall setup warnings | flag | `false` | `TEMPEST_NO_FIREWALL` |
