@@ -92,6 +92,7 @@ Before deploying to production:
 - [ ] Verify network connectivity and firewall rules
 - [ ] Configure appropriate publish interval for use case
 - [ ] Set up monitoring/alerting for plugin status
+- [ ] Create correct sesctl.yaml deployment configuration (need template)
 - [ ] Document deployment-specific configurations
 - [ ] Test Docker container on target platform
 - [ ] Verify Waggle data ingestion
