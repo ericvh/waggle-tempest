@@ -1,0 +1,289 @@
+name: waggle-tempest
+version: "1.0.0"
+description: "Waggle plugin for Tempest Weather Station - publishes UDP broadcast data"
+
+# Plugin metadata
+plugin:
+  name: waggle-tempest
+  version: "1.0.0"
+  description: "Tempest Weather Station Waggle Plugin"
+  
+# Container configuration
+container:
+  # Use the GitHub Container Registry image for multi-arch support
+  image: "ghcr.io/waggle-sensor/waggle-tempest:latest"
+  
+  # Required for UDP broadcasts from Tempest weather station
+  network_mode: host
+  
+  # Restart policy
+  restart: unless-stopped
+  
+  # Environment variables for configuration
+  environment:
+    # UDP port for Tempest broadcasts (default: 50222)
+    - TEMPEST_UDP_PORT=50222
+    
+    # Minimum publish interval in seconds (default: 60)
+    - TEMPEST_PUBLISH_INTERVAL=60
+    
+    # Enable debug output (default: false)
+    - TEMPEST_DEBUG=false
+    
+    # Skip firewall warnings (default: false)
+    - TEMPEST_NO_FIREWALL=false
+  
+  # Resource requirements and limits
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 200m
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  
+  # Health check configuration
+  healthcheck:
+    # Simple check to verify the plugin is responsive
+    test: ["CMD", "python3", "-c", "import main; print('Plugin ready')"]
+    interval: 60s
+    timeout: 15s
+    retries: 3
+    start_period: 30s
+
+# Network requirements
+network:
+  # UDP port must be accessible for Tempest weather station broadcasts
+  ports:
+    - protocol: UDP
+      port: 50222
+      description: "Tempest weather station UDP broadcasts"
+  
+  # Host networking required for UDP broadcast reception
+  mode: host
+
+# Deployment constraints
+constraints:
+  # Must have access to host network for UDP broadcasts
+  - label: network.host == "true"
+  
+  # Prefer nodes with good network connectivity
+  - label: network.quality == "good"
+
+# Dependencies
+dependencies:
+  # Requires waggle plugin base functionality
+  - name: waggle-plugin-base
+    version: ">=1.1.1"
+  
+  # Network access for UDP port 50222
+  - name: network-udp-50222
+    description: "UDP port 50222 access for Tempest broadcasts"
+    required: true
+
+# Published message topics
+topics:
+  # Wind measurements
+  - name: tempest.wind.speed.lull
+    description: "Tempest wind lull speed"
+    units: "knots"
+    type: "float"
+  
+  - name: tempest.wind.speed.avg
+    description: "Tempest average wind speed"
+    units: "knots"
+    type: "float"
+  
+  - name: tempest.wind.speed.gust
+    description: "Tempest wind gust speed"
+    units: "knots"
+    type: "float"
+  
+  - name: tempest.wind.direction
+    description: "Tempest wind direction"
+    units: "degrees"
+    type: "float"
+  
+  - name: tempest.wind.speed.instant
+    description: "Tempest instant wind speed (rapid updates)"
+    units: "knots"
+    type: "float"
+  
+  - name: tempest.wind.direction.instant
+    description: "Tempest instant wind direction (rapid updates)"
+    units: "degrees"
+    type: "float"
+  
+  # Environmental data
+  - name: tempest.pressure
+    description: "Tempest barometric pressure"
+    units: "hPa"
+    type: "float"
+  
+  - name: tempest.temperature
+    description: "Tempest air temperature"
+    units: "celsius"
+    type: "float"
+  
+  - name: tempest.humidity
+    description: "Tempest relative humidity"
+    units: "percent"
+    type: "float"
+  
+  # Light and solar data
+  - name: tempest.light.illuminance
+    description: "Tempest illuminance"
+    units: "lux"
+    type: "float"
+  
+  - name: tempest.light.uv_index
+    description: "Tempest UV index"
+    units: "index"
+    type: "float"
+  
+  - name: tempest.light.solar_radiation
+    description: "Tempest solar radiation"
+    units: "W/m²"
+    type: "float"
+  
+  # Precipitation data
+  - name: tempest.rain.since_report
+    description: "Tempest rain since last report"
+    units: "mm"
+    type: "float"
+  
+  - name: tempest.rain.daily
+    description: "Tempest daily rainfall"
+    units: "mm"
+    type: "float"
+  
+  # Lightning detection
+  - name: tempest.lightning.distance
+    description: "Tempest lightning distance"
+    units: "km"
+    type: "float"
+  
+  - name: tempest.lightning.count
+    description: "Tempest lightning strike count"
+    units: "count"
+    type: "integer"
+  
+  # System status and health
+  - name: tempest.battery
+    description: "Tempest battery voltage"
+    units: "volts"
+    type: "float"
+  
+  - name: tempest.report_interval
+    description: "Tempest report interval"
+    units: "minutes"
+    type: "integer"
+  
+  - name: tempest.hub.firmware
+    description: "Tempest hub firmware version"
+    units: "string"
+    type: "string"
+  
+  - name: tempest.hub.uptime
+    description: "Tempest hub uptime"
+    units: "seconds"
+    type: "integer"
+  
+  - name: tempest.hub.rssi
+    description: "Tempest hub signal strength"
+    units: "dBm"
+    type: "float"
+  
+  - name: tempest.status
+    description: "Tempest plugin status (1=active, 0=error)"
+    units: "status"
+    type: "integer"
+
+# Deployment configuration
+deployment:
+  # Strategy for updates
+  strategy:
+    type: rolling
+    max_unavailable: 0
+    max_surge: 1
+  
+  # Node selection preferences
+  node_selector:
+    # Prefer nodes with good network connectivity
+    network.quality: "good"
+  
+  # Tolerations for special node requirements
+  tolerations: []
+  
+  # Affinity rules
+  affinity:
+    node_affinity:
+      preferred_during_scheduling_ignored_during_execution:
+        - weight: 100
+          preference:
+            match_expressions:
+              - key: network.host
+                operator: Exists
+  
+  # Labels for this deployment
+  labels:
+    app: waggle-tempest
+    component: weather-station
+    protocol: tempest
+
+# Monitoring and observability
+monitoring:
+  # Metrics to track
+  metrics:
+    - name: tempest_data_received
+      description: "Number of Tempest data messages received"
+      type: counter
+    
+    - name: tempest_publish_count
+      description: "Number of messages published to Waggle"
+      type: counter
+    
+    - name: tempest_error_count
+      description: "Number of processing errors"
+      type: counter
+  
+  # Logging configuration
+  logging:
+    level: info  # Can be overridden with TEMPEST_DEBUG=true
+    format: json
+
+# Security and access control
+security:
+  # Required capabilities
+  capabilities:
+    - NET_BIND_SERVICE  # For UDP port binding
+  
+  # Security context
+  security_context:
+    run_as_user: 1000
+    run_as_group: 1000
+    run_as_non_root: true
+    read_only_root_filesystem: false  # Plugin needs to write logs
+
+# Deployment notes and requirements
+notes:
+  - "Requires Tempest weather station connected to the same network"
+  - "Tempest station must have UDP broadcasting enabled (default setting)"
+  - "UDP port 50222 must be accessible from the Tempest station"
+  - "Host networking mode is required for UDP broadcast reception"
+  - "Firewall configuration may be needed for UDP port 50222"
+  - "Works best when deployed on nodes with direct network access"
+
+# Example usage and commands
+examples:
+  deploy:
+    description: "Deploy with default settings"
+    command: "sesctl apply -f sesctl.yaml"
+  
+  deploy_debug:
+    description: "Deploy with debug logging enabled"
+    command: "sesctl apply -f <(sed 's/TEMPEST_DEBUG=false/TEMPEST_DEBUG=true/' sesctl.yaml)"
+  
+  deploy_custom_port:
+    description: "Deploy with custom UDP port"
+    command: "sesctl apply -f <(sed 's/TEMPEST_UDP_PORT=50222/TEMPEST_UDP_PORT=50223/' sesctl.yaml)"

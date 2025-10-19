@@ -1,5 +1,62 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Add Sesctl Deployment Configuration
+
+### Enhancement: Sesctl YAML Configuration ✅
+
+**What was added**:
+- Created comprehensive `sesctl.yaml` file for Waggle edge deployments
+- Added complete deployment configuration with multi-architecture container support
+- Included all environment variables, resource limits, and health checks
+- Added detailed topic definitions for all published Tempest data
+
+**Sesctl Configuration Features**:
+- **Container image**: Uses GitHub Container Registry multi-arch image (`ghcr.io/waggle-sensor/waggle-tempest:latest`)
+- **Network configuration**: Host networking for UDP broadcast reception
+- **Environment variables**: All configurable options (UDP port, publish interval, debug mode)
+- **Resource management**: CPU and memory limits with appropriate requests
+- **Health checks**: Built-in monitoring for plugin responsiveness
+- **Security context**: Non-root user execution with required capabilities
+
+**Deployment Features**:
+- **Rolling updates**: Configurable deployment strategy with zero-downtime updates
+- **Node affinity**: Prefers nodes with good network connectivity
+- **Topic definitions**: Complete documentation of all published message topics
+- **Monitoring**: Built-in metrics and logging configuration
+- **Examples**: Multiple deployment scenarios with custom configurations
+
+**Files added**:
+- `sesctl.yaml` - Complete sesctl deployment configuration (290 lines)
+
+**Files modified**:
+- `README.md` - Added sesctl deployment section with usage examples
+- Added comprehensive documentation for Waggle edge deployments
+
+**Configuration Highlights**:
+- **Image**: `ghcr.io/waggle-sensor/waggle-tempest:latest`
+- **Network**: Host mode for UDP port 50222 access
+- **Environment**: All Tempest configuration options via environment variables
+- **Topics**: 18+ defined topics covering all weather data types
+- **Resources**: Memory limits (512Mi), CPU limits (200m)
+
+**Usage Examples**:
+```bash
+# Basic deployment
+sesctl apply -f sesctl.yaml
+
+# Debug deployment
+sesctl apply -f <(sed 's/TEMPEST_DEBUG=false/TEMPEST_DEBUG=true/' sesctl.yaml)
+```
+
+**Benefits**:
+- **Production-ready**: Complete configuration for Waggle edge deployments
+- **Multi-architecture**: Works on both amd64 and arm64 systems
+- **Configurable**: All plugin settings exposed via environment variables
+- **Monitored**: Health checks and metrics for operational visibility
+- **Secure**: Non-root execution with appropriate security contexts
+
+---
+
 ## 2025-10-12 - Add GitHub Multi-Architecture Docker Build Workflow
 
 ### Enhancement: Automated Multi-Arch Docker Builds ✅

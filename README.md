@@ -110,6 +110,28 @@ pip install -r requirements.txt
 python3 main.py
 ```
 
+### Sesctl Deployment
+
+For Waggle edge deployments, use the provided `sesctl.yaml` configuration:
+
+```bash
+# Deploy with default settings
+sesctl apply -f sesctl.yaml
+
+# Deploy with debug logging enabled
+sesctl apply -f <(sed 's/TEMPEST_DEBUG=false/TEMPEST_DEBUG=true/' sesctl.yaml)
+
+# Deploy with custom UDP port
+sesctl apply -f <(sed 's/TEMPEST_UDP_PORT=50222/TEMPEST_UDP_PORT=50223/' sesctl.yaml)
+```
+
+The `sesctl.yaml` file includes:
+- Multi-architecture container image from GitHub Container Registry
+- Host networking configuration for UDP broadcasts
+- Environment variable configuration for all plugin settings
+- Resource limits and health checks
+- Complete topic definitions for all published data
+
 ## Usage
 
 ### Basic Usage
