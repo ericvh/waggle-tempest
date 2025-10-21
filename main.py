@@ -542,77 +542,77 @@ def main():
                     
                     # Wind data
                     plugin.publish("tempest.wind.speed.lull", obs["wind"]["lull_kt"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "knots", 
                                        "description": "Tempest wind lull speed", "source": "obs_st", "missing": "-9999.0"})
                     plugin.publish("tempest.wind.speed.avg", obs["wind"]["avg_kt"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "knots", 
                                        "description": "Tempest average wind speed", "source": "obs_st", "missing": "-9999.0"})
                     plugin.publish("tempest.wind.speed.gust", obs["wind"]["gust_kt"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "knots", 
                                        "description": "Tempest wind gust speed", "source": "obs_st", "missing": "-9999.0"})
                     plugin.publish("tempest.wind.direction", obs["wind"]["direction_deg"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "degrees", 
                                        "description": "Tempest wind direction", "source": "obs_st", "missing": "-9999.0"})
                     
                     # Environmental data
                     plugin.publish("tempest.pressure", obs["pressure"]["hpa"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "hPa", 
                                        "description": "Tempest barometric pressure", "source": "obs_st", "missing": "-9999.0"})
                     plugin.publish("tempest.temperature", obs["temperature"]["c"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "celsius", 
                                        "description": "Tempest air temperature", "source": "obs_st", "missing": "-9999.0"})
                     plugin.publish("tempest.humidity", obs["humidity_percent"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "percent", 
                                        "description": "Tempest relative humidity", "source": "obs_st", "missing": "-9999.0"})
                     
                     # Light data
                     plugin.publish("tempest.light.illuminance", obs["light"]["illuminance_lux"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "lux", 
                                        "description": "Tempest illuminance", "source": "obs_st", "missing": "-9999.0"})
                     plugin.publish("tempest.light.uv_index", obs["light"]["uv_index"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "index", 
                                        "description": "Tempest UV index", "source": "obs_st", "missing": "-9999.0"})
                     plugin.publish("tempest.light.solar_radiation", obs["light"]["solar_radiation_wm2"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "W/m²", 
                                        "description": "Tempest solar radiation", "source": "obs_st", "missing": "-9999.0"})
                     
                     # Precipitation data
                     plugin.publish("tempest.rain.since_report", obs["rain"]["since_report_mm"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "mm", 
                                        "description": "Tempest rain since report", "source": "obs_st", "missing": "-9999.0"})
                     plugin.publish("tempest.rain.daily", obs["rain"]["local_day_mm"] or 0, 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "mm", 
                                        "description": "Tempest daily rainfall", "source": "obs_st", "missing": "-9999.0"})
                     
                     # Lightning data
                     plugin.publish("tempest.lightning.distance", obs["lightning"]["avg_distance_km"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "km", 
                                        "description": "Tempest lightning distance", "source": "obs_st", "missing": "-9999.0"})
                     plugin.publish("tempest.lightning.count", obs["lightning"]["strike_count"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "count", 
                                        "description": "Tempest lightning strike count", "source": "obs_st", "missing": "-9999.0"})
                     
                     # Battery and system data
                     plugin.publish("tempest.battery", obs["battery_v"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "volts", 
                                        "description": "Tempest battery voltage", "source": "obs_st", "missing": "-9999.0"})
                     plugin.publish("tempest.report_interval", obs["report_interval_min"], 
-                                 timestamp=timestamp, scope="node",
+                                 timestamp=timestamp, scope="all",
                                  meta={"sensor": "tempest-weather-station", "units": "minutes", 
                                        "description": "Tempest report interval", "source": "obs_st", "missing": "-9999.0"})
                     

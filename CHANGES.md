@@ -1,5 +1,40 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Differentiate Scope for obs_st vs rapid_wind Data
+
+### Enhancement: Set obs_st to All Scope, rapid_wind to Node Only ✅
+
+**What was changed**:
+- Changed obs_st (weather observations) publications to use `scope="all"` so records show up on beehive
+- Kept rapid_wind publications at `scope="node"` as requested
+- Maintained existing scopes for hub_status and plugin status messages
+
+**Technical Details**:
+- **obs_st scope**: Changed 16 weather observation publications from `scope="node"` to `scope="all"`
+  - Wind data: lull, average, gust speeds and direction
+  - Environmental data: pressure, temperature, humidity
+  - Light data: illuminance, UV index, solar radiation
+  - Precipitation data: rain since report, daily rainfall
+  - Lightning data: distance and strike count
+  - System data: battery voltage, report interval
+
+- **rapid_wind scope**: Kept 2 rapid wind publications at `scope="node"` (untouched)
+  - Instant wind speed and direction measurements
+
+- **Other publications**: Maintained existing `scope="node"` for:
+  - Hub status data (firmware, uptime, RSSI) - 3 publications
+  - Plugin status messages (heartbeat, error, shutdown) - 3 publications
+
+**Files modified**:
+- `main.py` - Updated scope parameter for obs_st publications (lines 545, 549, 553, 557, 563, 567, 571, 577, 581, 585, 591, 595, 601, 605, 611, 615)
+
+**Impact**:
+- obs_st weather observation data will now appear on beehive system for broader access
+- rapid_wind data remains node-scoped for local processing requirements
+- Maintains proper data scoping strategy for different data types
+
+---
+
 ## 2025-10-12 - Change Publish Scope to Node
 
 ### Enhancement: Update Publication Scope ✅
