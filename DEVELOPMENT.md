@@ -42,9 +42,17 @@ This document outlines best practices for developing and maintaining the Tempest
   - `refactor/description` (e.g., `refactor/optimize-parsing-logic`)
 
 #### Pull Request Workflow
-1. **Create feature branch**:
+1. **Update main branch and create feature branch**:
    ```bash
+   # Ensure you're on main and it's up to date
+   git checkout main
+   git pull origin main
+   
+   # Create feature branch from latest main
    git checkout -b feature/your-feature-name
+   
+   # Set upstream tracking for the branch
+   git push -u origin feature/your-feature-name
    ```
 
 2. **Make changes** following all documentation requirements below
@@ -72,7 +80,7 @@ This document outlines best practices for developing and maintaining the Tempest
 
 5. **Push branch and create Pull Request**:
    ```bash
-   git push origin feature/your-feature-name
+   git push
    ```
    Then create PR on GitHub with descriptive title and body
 
@@ -103,8 +111,11 @@ chore: brief description of maintenance tasks
 
 #### Example Good Branch and PR Workflow
 ```bash
-# Create feature branch
+# Update main branch and create feature branch
+git checkout main
+git pull origin main
 git checkout -b feature/environment-variable-support
+git push -u origin feature/environment-variable-support
 
 # Make changes following documentation requirements
 # ... code changes ...
@@ -140,7 +151,7 @@ Benefits:
 - Easier CI/CD configuration"
 
 # Push and create PR
-git push origin feature/environment-variable-support
+git push
 ```
 
 #### Pull Request Template
@@ -404,15 +415,16 @@ This shows detailed logging for development and troubleshooting.
 ## Quick Reference
 
 ### Pull Request Workflow:
-1. Create feature branch ✅
-2. Make changes following documentation requirements ✅
-3. Run syntax checks ✅
-4. Update README.md ✅
-5. Update CHANGES.md ✅  
-6. Update TODO.md ✅
-7. Commit to feature branch with conventional message ✅
-8. Push branch to remote ✅
-9. Create Pull Request with comprehensive description ✅
+1. Update main branch and create feature branch ✅
+2. Set upstream tracking for the branch ✅
+3. Make changes following documentation requirements ✅
+4. Run syntax checks ✅
+5. Update README.md ✅
+6. Update CHANGES.md ✅  
+7. Update TODO.md ✅
+8. Commit to feature branch with conventional message ✅
+9. Push branch to remote ✅
+10. Create Pull Request with comprehensive description ✅
 
 ### File Update Order:
 1. Code changes (main.py)

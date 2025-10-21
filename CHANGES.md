@@ -35,6 +35,38 @@
 
 ---
 
+## 2025-10-12 - Enhance Pull Request Workflow with Upstream Tracking
+
+### Enhancement: Improve Branch Creation and Upstream Setup ✅
+
+**What was changed**:
+- Enhanced DEVELOPMENT.md pull request workflow to include proper main branch updates
+- Added upstream tracking setup for feature branches
+- Updated workflow examples and quick reference to include new steps
+
+**Technical Details**:
+- **Enhanced Workflow**: Updated pull request workflow to include:
+  1. `git checkout main` - Switch to main branch
+  2. `git pull origin main` - Update main to latest version
+  3. `git checkout -b feature/name` - Create feature branch from latest main
+  4. `git push -u origin feature/name` - Set upstream tracking immediately
+
+- **Benefits**:
+  - Ensures feature branches are based on latest main
+  - Sets up proper upstream tracking for easier pushing
+  - Prevents merge conflicts from outdated base branches
+  - Simplifies subsequent pushes with `git push` (no need to specify remote/branch)
+
+**Files modified**:
+- `DEVELOPMENT.md` - Enhanced pull request workflow, examples, and quick reference
+
+**Workflow Improvements**:
+- **Before**: `git checkout -b feature/name` (potentially outdated base)
+- **After**: Full workflow with main update and upstream setup
+- **Simplified pushing**: `git push` instead of `git push origin feature/name`
+
+---
+
 ## 2025-10-12 - Switch to GitHub Pull Request Development Workflow
 
 ### Enhancement: Update Development Process to Pull Request Based ✅
