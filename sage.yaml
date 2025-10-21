@@ -1,5 +1,5 @@
 name: "waggle-tempest"
-version: "0.0.1"
+version: "0.0.3"
 description: "Waggle plugin to get data from a Tempest Weather Station"
 keywords: ""
 authors: "Eric Van Hensbergen"
