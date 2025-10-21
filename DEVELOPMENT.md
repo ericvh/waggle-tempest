@@ -39,6 +39,7 @@ This document outlines best practices for developing and maintaining the Tempest
   - `feature/description` (e.g., `feature/tcp-protocol-support`)
   - `fix/description` (e.g., `fix/timestamp-metadata-error`)
   - `docs/description` (e.g., `docs/update-readme-examples`)
+  - `refactor/description` (e.g., `refactor/optimize-parsing-logic`)
 
 #### Pull Request Workflow
 1. **Create feature branch**:
