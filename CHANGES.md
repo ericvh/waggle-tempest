@@ -1,5 +1,45 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Fix Metadata Type Error
+
+### Bug Fix: Ensure All Metadata Values Are Strings ✅
+
+**What was fixed**:
+- Fixed error: "Meta must be a dictionary of strings to strings"
+- Converted all numeric metadata values to proper string format
+- Ensures Waggle plugin.publish() compliance with strict typing requirements
+
+**Root Cause**:
+- Metadata dictionary contained numeric values (integers and floats)
+- Waggle/PyWaggle requires all metadata values to be strings only
+- Two specific issues found:
+  - `"missing": -9999.0` (float → should be string)
+  - `"last_update": int(time.time())` (integer → should be string)
+
+**Technical Fix**:
+- **Missing values**: Changed from `-9999.0` to `"-9999.0"` (23 occurrences)
+- **Timestamp values**: Changed from `int(time.time())` to `str(int(time.time()))`
+- **All metadata**: Now properly formatted as `{key: "string_value"}`
+
+**Files modified**:
+- `main.py` - Updated all plugin.publish() metadata dictionaries (lines 517, 521, 525, 529, 535, 539, 543, 549, 553, 557, 563, 567, 573, 577, 583, 587, 599, 603, 618, 622, 632, 641, 717)
+
+**Verification**:
+```python
+# Before (causing error):
+meta={"sensor": "tempest-weather-station", "missing": -9999.0}
+
+# After (correct format):
+meta={"sensor": "tempest-weather-station", "missing": "-9999.0"}
+```
+
+**Benefits**:
+- **Waggle compliance**: Eliminates metadata type errors in plugin publishing
+- **Data integrity**: Maintains all metadata information while following type requirements
+- **Reliability**: Prevents publishing failures due to strict type checking
+
+---
+
 ## 2025-10-12 - Update to PyWaggle Package
 
 ### Enhancement: Modern Waggle Stack Compatibility ✅
