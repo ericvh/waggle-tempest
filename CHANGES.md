@@ -1,5 +1,61 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Improve TCP Connection Persistence
+
+### Enhancement: Robust TCP Connection Handling ✅
+
+**What was improved**:
+- Enhanced TCP connection handling to prevent unnecessary connection drops
+- Added proper connection keepalive and persistent connection management
+- Improved error handling to maintain connections through transient issues
+
+**Issues Addressed**:
+- **Problem**: broadcast-gateway connections were dropping and reconnecting repeatedly
+- **Root Cause**: Aggressive connection closure on timeout or parsing errors
+- **Impact**: Unnecessary reconnection overhead and potential data loss
+
+**Technical Improvements**:
+
+**TCP Server Enhancements**:
+- **Threaded connections**: Each client connection now runs in its own thread
+- **SO_KEEPALIVE**: Enabled TCP keepalive on all client sockets
+- **Connection logging**: Added detailed connection lifecycle logging
+
+**Client Handler Improvements**:
+- **Error resilience**: Changed `break` to `continue` for message-level errors
+- **Connection persistence**: Only close connection on actual socket errors, not parsing errors
+- **Better error categorization**: Distinguish between recoverable and fatal errors
+- **Graceful degradation**: Skip problematic messages but maintain connection
+
+**Error Handling Enhancements**:
+- **Specific socket errors**: Handle `ConnectionResetError`, `ConnectionAbortedError`, `BrokenPipeError`
+- **Message-level errors**: Continue processing after JSON/decode errors instead of dropping connection
+- **Timeout handling**: Distinguish between connection timeouts and message timeouts
+
+**Code Changes**:
+```python
+# Before: Aggressive connection drops
+if msg_length <= 0 or msg_length > 65535:
+    logger.warning(f"Invalid message length: {msg_length}")
+    break  # ❌ Closes entire connection
+
+# After: Skip bad messages, keep connection alive  
+if msg_length <= 0 or msg_length > 65535:
+    logger.warning(f"Invalid message length: {msg_length} - skipping message")
+    continue  # ✅ Skip message but maintain connection
+```
+
+**Benefits**:
+- **Connection stability**: Prevents unnecessary connection drops from broadcast-gateway
+- **Data reliability**: Maintains connection through transient parsing or network issues
+- **Resource efficiency**: Reduces reconnection overhead and connection establishment costs
+- **Better logging**: Improved visibility into connection lifecycle for debugging
+
+**Files modified**:
+- `main.py` - Enhanced `tempest_tcp_listener()`, `handle_tcp_client()`, and `recv_exactly()` functions (lines 238-382)
+
+---
+
 ## 2025-10-12 - Fix Metadata Type Error
 
 ### Bug Fix: Ensure All Metadata Values Are Strings ✅

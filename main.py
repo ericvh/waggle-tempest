@@ -250,10 +250,19 @@ def tempest_tcp_listener(logger, publish_callback, tcp_port=TCP_PORT):
             try:
                 # Accept incoming connections
                 client_sock, addr = server_sock.accept()
-                logger.debug(f"📡 Accepted TCP connection from {addr[0]}:{addr[1]}")
+                logger.info(f"📡 Accepted TCP connection from {addr[0]}:{addr[1]}")
                 
-                # Handle messages from this client
-                handle_tcp_client(client_sock, addr, logger, publish_callback)
+                # Configure client socket for persistent connection
+                client_sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+                client_sock.settimeout(None)  # No blocking timeout for recv
+                
+                # Start a new thread to handle this client
+                client_thread = threading.Thread(
+                    target=handle_tcp_client,
+                    args=(client_sock, addr, logger, publish_callback),
+                    daemon=True
+                )
+                client_thread.start()
                 
             except Exception as e:
                 logger.error(f"TCP listener error: {e}")
@@ -265,89 +274,110 @@ def tempest_tcp_listener(logger, publish_callback, tcp_port=TCP_PORT):
 
 
 def handle_tcp_client(client_sock, addr, logger, publish_callback):
-    """Handle messages from a TCP client connection"""
+    """Handle messages from a TCP client connection - maintains persistent connection"""
+    logger.info(f"🔗 Starting persistent TCP connection handler for {addr[0]}:{addr[1]}")
+    
     try:
         while True:
-            # Read length prefix (4 bytes, big-endian)
-            length_data = recv_exactly(client_sock, 4, logger)
-            if not length_data:
-                break
-                
-            # Unpack length
-            msg_length = int.from_bytes(length_data, byteorder='big')
-            
-            if msg_length <= 0 or msg_length > 65535:  # Reasonable limits
-                logger.warning(f"Invalid message length: {msg_length} from {addr[0]}")
-                break
-            
-            # Read the actual message
-            msg_data = recv_exactly(client_sock, msg_length, logger)
-            if not msg_data:
-                break
-                
             try:
-                # Parse JSON message
-                msg = json.loads(msg_data.decode("utf-8"))
-                msg_type = msg.get("type", "unknown")
-                
-                logger.debug(f"📥 Received {msg_type} TCP message from {addr[0]} ({msg_length} bytes)")
-                
-                # Store the raw message by type
-                with tempest_data_lock:
-                    latest_tempest_raw_by_type[msg_type] = msg
+                # Read length prefix (4 bytes, big-endian)
+                length_data = recv_exactly(client_sock, 4, logger, addr)
+                if not length_data:
+                    logger.info(f"📡 Connection closed by {addr[0]}:{addr[1]}")
+                    break
                     
-                    # If we have a parser for this type, also store parsed
-                    parser = TEMPEST_PARSERS.get(msg_type)
-                    if parser:
-                        try:
-                            parsed_data = parser(msg)
-                            latest_tempest_parsed_by_type[msg_type] = {
-                                "type": msg_type,
-                                "data": parsed_data
-                            }
-                            
-                            # Attempt to publish the data (will be throttled based on publish_interval)
-                            publish_callback(parsed_data, msg_type)
-                            
-                        except Exception as e:
-                            logger.error(f"Error parsing {msg_type} message: {e}")
-                            # Skip parsing errors but continue listening
-                    else:
-                        # If no parser, remove any stale parsed entry
-                        if msg_type in latest_tempest_parsed_by_type:
-                            del latest_tempest_parsed_by_type[msg_type]
-                        logger.debug(f"Received unknown message type: {msg_type}")
+                # Unpack length
+                msg_length = int.from_bytes(length_data, byteorder='big')
+                
+                if msg_length <= 0 or msg_length > 65535:  # Reasonable limits
+                    logger.warning(f"Invalid message length: {msg_length} from {addr[0]} - skipping message")
+                    continue  # Skip this message but keep connection alive
+                
+                # Read the actual message
+                msg_data = recv_exactly(client_sock, msg_length, logger, addr)
+                if not msg_data:
+                    logger.info(f"📡 Connection closed by {addr[0]}:{addr[1]} while reading message")
+                    break
+                    
+                try:
+                    # Parse JSON message
+                    msg = json.loads(msg_data.decode("utf-8"))
+                    msg_type = msg.get("type", "unknown")
+                    
+                    logger.debug(f"📥 Received {msg_type} TCP message from {addr[0]} ({msg_length} bytes)")
+                    
+                    # Store the raw message by type
+                    with tempest_data_lock:
+                        latest_tempest_raw_by_type[msg_type] = msg
                         
-            except json.JSONDecodeError as e:
-                logger.warning(f"Invalid JSON from {addr[0]}: {e}")
-                continue
+                        # If we have a parser for this type, also store parsed
+                        parser = TEMPEST_PARSERS.get(msg_type)
+                        if parser:
+                            try:
+                                parsed_data = parser(msg)
+                                latest_tempest_parsed_by_type[msg_type] = {
+                                    "type": msg_type,
+                                    "data": parsed_data
+                                }
+                                
+                                # Attempt to publish the data (will be throttled based on publish_interval)
+                                publish_callback(parsed_data, msg_type)
+                                
+                            except Exception as e:
+                                logger.error(f"Error parsing {msg_type} message: {e}")
+                                # Skip parsing errors but continue listening
+                        else:
+                            # If no parser, remove any stale parsed entry
+                            if msg_type in latest_tempest_parsed_by_type:
+                                del latest_tempest_parsed_by_type[msg_type]
+                            logger.debug(f"Received unknown message type: {msg_type}")
+                            
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Invalid JSON from {addr[0]}: {e} - skipping message")
+                    continue  # Skip this message but keep connection alive
+                except Exception as e:
+                    logger.error(f"Error processing TCP message from {addr[0]}: {e} - skipping message")
+                    continue  # Skip this message but keep connection alive
+                    
+            except socket.error as e:
+                logger.info(f"📡 TCP connection to {addr[0]}:{addr[1]} lost: {e}")
+                break
             except Exception as e:
-                logger.error(f"Error processing TCP message from {addr[0]}: {e}")
-                continue
+                logger.error(f"Unexpected error in TCP client handler for {addr[0]}: {e}")
+                continue  # Try to recover and continue
                 
     except Exception as e:
-        logger.debug(f"TCP client {addr[0]} disconnected: {e}")
+        logger.info(f"📡 TCP client {addr[0]}:{addr[1]} disconnected: {e}")
     finally:
         try:
             client_sock.close()
+            logger.info(f"📡 Closed TCP connection to {addr[0]}:{addr[1]}")
         except:
             pass
 
 
-def recv_exactly(sock, num_bytes, logger):
-    """Receive exactly num_bytes from socket"""
+def recv_exactly(sock, num_bytes, logger, addr=None):
+    """Receive exactly num_bytes from socket with better error handling"""
     data = b""
+    addr_str = f" from {addr[0]}" if addr else ""
+    
     while len(data) < num_bytes:
         try:
             chunk = sock.recv(num_bytes - len(data))
             if not chunk:
+                logger.debug(f"Connection closed{addr_str} while receiving {num_bytes} bytes")
                 return None  # Connection closed
             data += chunk
         except socket.timeout:
-            logger.warning("TCP receive timeout")
+            logger.warning(f"TCP receive timeout{addr_str}")
+            # Don't immediately return None on timeout - this could cause connection drops
+            # Let the socket timeout be handled by the caller
+            return None
+        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError) as e:
+            logger.info(f"TCP connection reset{addr_str}: {e}")
             return None
         except Exception as e:
-            logger.error(f"TCP receive error: {e}")
+            logger.error(f"TCP receive error{addr_str}: {e}")
             return None
     return data
 
