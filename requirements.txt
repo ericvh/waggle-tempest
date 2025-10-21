@@ -1,8 +1,8 @@
 # Tempest Weather Station Waggle Plugin Requirements
 # ================================================
 
-# Waggle plugin framework
-waggle>=0.7.0
+# PyWaggle plugin framework (replaces waggle package)
+pywaggle>=0.50.0
 
 # Standard library modules (no additional requirements needed)
 # - json (built-in)

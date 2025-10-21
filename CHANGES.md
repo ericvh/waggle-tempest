@@ -1,5 +1,31 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Update to PyWaggle Package
+
+### Enhancement: Modern Waggle Stack Compatibility ✅
+
+**What was updated**:
+- Updated dependency from `waggle>=0.7.0` to `pywaggle>=0.50.0`
+- Aligns with current Waggle stack recommendations and latest developments
+- Maintains backward compatibility with existing plugin code
+
+**Technical Details**:
+- **New dependency**: `pywaggle>=0.50.0` replaces `waggle>=0.7.0`
+- **Backward compatibility**: `from waggle.plugin import Plugin` import path remains unchanged
+- **Package transition**: PyWaggle is the modern replacement for the legacy waggle package
+- **Version requirement**: Minimum 0.50.0 ensures access to latest features and improvements
+
+**Files modified**:
+- `requirements.txt` - Updated dependency specification and added clarification comment
+
+**Benefits**:
+- **Current stack**: Aligns with modern Waggle infrastructure requirements
+- **Latest features**: Access to improvements and bug fixes in PyWaggle 0.50.0+
+- **Compatibility**: Maintains existing plugin code without import changes
+- **Future-proof**: Established on the actively maintained package path
+
+---
+
 ## 2025-10-12 - Fix Waggle Timestamp Format Error
 
 ### Bug Fix: Correct Timestamp Format for Waggle Publishing ✅
