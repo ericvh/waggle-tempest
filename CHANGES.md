@@ -1,5 +1,29 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Change Publish Scope to Node
+
+### Enhancement: Update Publication Scope ✅
+
+**What was changed**:
+- Changed all `plugin.publish()` scope parameter from `"beehive"` to `"node"`
+- Updated scope for all 24 publication calls across weather data, status messages, and system data
+
+**Technical Details**:
+- **Scope change**: All Waggle publications now use `scope="node"` instead of `scope="beehive"`
+- **Coverage**: Updated 24 publication calls including:
+  - Weather observations (wind, temperature, pressure, humidity, light, precipitation, lightning)
+  - System data (battery, hub status, firmware, uptime, signal strength)
+  - Plugin status messages (heartbeat, error, shutdown)
+
+**Files modified**:
+- `main.py` - Updated all `plugin.publish()` calls (24 occurrences)
+
+**Impact**:
+- Data publications will now be scoped at the node level rather than beehive level
+- Maintains all existing functionality while updating the publication scope as requested
+
+---
+
 ## 2025-10-12 - Improve TCP Connection Persistence
 
 ### Enhancement: Robust TCP Connection Handling ✅
