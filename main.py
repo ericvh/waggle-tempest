@@ -54,6 +54,27 @@ def mm_to_in(mm):
     return None if mm is None else mm / 25.4
 
 
+def get_nanosecond_timestamp(tempest_timestamp=None):
+    """
+    Convert timestamp to nanoseconds since epoch as required by Waggle.
+    
+    Args:
+        tempest_timestamp: Optional Tempest timestamp (epoch seconds)
+                          If None, uses current time
+    
+    Returns:
+        int: Nanoseconds since epoch
+    """
+    if tempest_timestamp is not None:
+        # Tempest timestamps are in seconds since epoch
+        timestamp_ns = int(tempest_timestamp * 1_000_000_000)
+    else:
+        # Use current time
+        timestamp_ns = int(time.time() * 1_000_000_000)
+    
+    return timestamp_ns
+
+
 # ---------------- Tempest Message Parsers ----------------
 PRECIP_TYPES = {
     0: "none",
@@ -487,7 +508,7 @@ def main():
                 if msg_type == "obs_st" and "error" not in parsed_data:
                     # Publish comprehensive weather observations
                     obs = parsed_data
-                    timestamp = datetime.now(timezone.utc)
+                    timestamp = get_nanosecond_timestamp(obs.get("timestamp"))
                     
                     # Wind data
                     plugin.publish("tempest.wind.speed.lull", obs["wind"]["lull_kt"], 
@@ -570,7 +591,7 @@ def main():
                 elif msg_type == "rapid_wind" and "error" not in parsed_data:
                     # Publish rapid wind data (most recent wind readings)
                     wind = parsed_data["wind"]
-                    timestamp = datetime.now(timezone.utc)
+                    timestamp = get_nanosecond_timestamp(parsed_data.get("timestamp"))
                     
                     plugin.publish("tempest.wind.speed.instant", wind["instant_kt"], 
                                  timestamp=timestamp, scope="beehive",
@@ -585,7 +606,7 @@ def main():
                     
                 elif msg_type == "hub_status" and "error" not in parsed_data:
                     # Publish hub status data
-                    timestamp = datetime.now(timezone.utc)
+                    timestamp = get_nanosecond_timestamp(parsed_data.get("timestamp"))
                     
                     plugin.publish("tempest.hub.firmware", parsed_data["firmware"] or "unknown", 
                                  timestamp=timestamp, scope="beehive",
@@ -603,7 +624,7 @@ def main():
                     logger.info(f"📡 Published hub_status data: firmware={parsed_data['firmware']}, uptime={parsed_data['uptime_s']}s, RSSI={parsed_data['rssi']}dBm")
                     
                 # Always publish a heartbeat/status message
-                status_timestamp = datetime.now(timezone.utc)
+                status_timestamp = get_nanosecond_timestamp()
                 plugin.publish("tempest.status", 1, 
                              timestamp=status_timestamp, scope="beehive",
                              meta={"sensor": "tempest-weather-station", 
@@ -612,7 +633,7 @@ def main():
                 
             except Exception as e:
                 logger.error(f"Error publishing Tempest data: {e}")
-                error_timestamp = datetime.now(timezone.utc)
+                error_timestamp = get_nanosecond_timestamp()
                 plugin.publish("tempest.status", 0, 
                              timestamp=error_timestamp, scope="beehive",
                              meta={"sensor": "tempest-weather-station", 
@@ -688,7 +709,7 @@ def main():
         finally:
             # Cleanup
             logger.info("🧹 Cleaning up Tempest plugin...")
-            shutdown_timestamp = datetime.now(timezone.utc)
+            shutdown_timestamp = get_nanosecond_timestamp()
             plugin.publish("tempest.status", 0, 
                          timestamp=shutdown_timestamp, scope="beehive",
                          meta={"sensor": "tempest-weather-station", 

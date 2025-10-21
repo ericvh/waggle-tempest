@@ -1,5 +1,48 @@
 # Waggle-Tempest Change Log
 
+## 2025-10-12 - Fix Waggle Timestamp Format Error
+
+### Bug Fix: Correct Timestamp Format for Waggle Publishing ✅
+
+**What was fixed**:
+- Fixed timestamp format error: "Timestamp must be an int and have units of nanoseconds since epoch"
+- Replaced `datetime.now(timezone.utc)` with proper nanosecond timestamps
+- Now uses actual Tempest timestamps when available for data accuracy
+
+**Technical Details**:
+- **Root cause**: Passing `datetime` objects instead of nanosecond integers to `plugin.publish()`
+- **Solution**: Added `get_nanosecond_timestamp()` function for proper timestamp conversion
+- **Tempest timestamps**: Uses actual sensor timestamps from Tempest data when available
+- **Fallback**: Uses current time in nanoseconds for status messages
+
+**Timestamp Implementation**:
+```python
+def get_nanosecond_timestamp(tempest_timestamp=None):
+    """Convert timestamp to nanoseconds since epoch as required by Waggle."""
+    if tempest_timestamp is not None:
+        # Tempest timestamps are in seconds since epoch
+        timestamp_ns = int(tempest_timestamp * 1_000_000_000)
+    else:
+        # Use current time
+        timestamp_ns = int(time.time() * 1_000_000_000)
+    return timestamp_ns
+```
+
+**Changes Made**:
+- **Data timestamps**: Use Tempest sensor timestamps (`obs["timestamp"]`, `rapid_wind["timestamp"]`, `hub_status["timestamp"]`)
+- **Status timestamps**: Use current time for plugin status/heartbeat messages
+- **Format**: All timestamps now passed as integer nanoseconds since epoch
+
+**Files modified**:
+- `main.py` - Added timestamp conversion function and updated all publish calls (lines 57-75, 511, 594, 609, 627, 636, 712)
+
+**Benefits**:
+- **Waggle compliance**: Eliminates timestamp format errors
+- **Data accuracy**: Uses actual Tempest sensor timestamps for weather data
+- **Proper timing**: Status messages use current time for accurate plugin state tracking
+
+---
+
 ## 2025-10-12 - Add Sesctl Deployment Configuration
 
 ### Enhancement: Plugin Deployment Configuration ✅
