@@ -34,7 +34,7 @@ This document outlines best practices for developing and maintaining the Tempest
 ### 2. Git Workflow - Pull Request Based Development
 
 #### Branch Strategy
-- **Always create feature branches** for new work instead of committing directly to main
+- **Always create feature branches** for new work instead of committing directly to `main`
 - Use descriptive branch names:
   - `feature/description` (e.g., `feature/tcp-protocol-support`)
   - `fix/description` (e.g., `fix/timestamp-metadata-error`)
