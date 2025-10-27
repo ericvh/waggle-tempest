@@ -447,7 +447,7 @@ def parse_args():
 def main():
     """Main function"""
     global publish_interval
-    
+    time.sleep(60)
     args = parse_args()
     
     # Configure logging
